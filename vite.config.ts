@@ -9,7 +9,7 @@ export default defineConfig(() => ({
     port: 8080,
   },
   preview: {
-    allowedHosts: ["astarusai.onrender.com"],
+    allowedHosts: ["astarusai.onrender.com", "astarus.ai"],
   },
   plugins: [react()],
   resolve: {

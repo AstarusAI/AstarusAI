@@ -7,12 +7,12 @@ export const Hero = () => {
     <section className="relative min-h-screen flex items-center justify-center px-4 py-20 overflow-hidden">
       {/* Hero background image */}
       <div className="absolute inset-0 overflow-hidden">
-        <img 
-          src={heroImage} 
-          alt="AI Neural Network" 
-          className="w-full h-full object-cover opacity-20"
+        <img
+          src={heroImage}
+          alt="AI Neural Network"
+          className="w-full h-full object-cover opacity-40"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/80 to-background" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/60 to-background" />
       </div>
 
       <div className="container relative z-10">

@@ -8,6 +8,9 @@ export default defineConfig(() => ({
     host: "::",
     port: 8080,
   },
+  preview: {
+    allowedHosts: ["astarusai.onrender.com"],
+  },
   plugins: [react()],
   resolve: {
     alias: {

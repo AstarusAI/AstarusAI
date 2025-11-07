@@ -53,17 +53,20 @@ All colors MUST be HSL.
 @layer base {
   * {
     @apply border-border;
+    scrollbar-width: none;
+  }
+
+  *::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
   }
 
   body {
     @apply bg-background text-foreground antialiased;
     scroll-behavior: smooth;
-    scrollbar-width: none;
     -ms-overflow-style: none;
-  }
-
-  body::-webkit-scrollbar {
-    display: none;
+    overflow-x: hidden;
   }
 
   h1, h2, h3, h4, h5, h6 {

@@ -45,12 +45,34 @@ export const UseCases = () => {
             return (
               <Card
                 key={index}
-                className="p-8 bg-card border card-hover group"
+                className="p-6 bg-card border-2 card-hover group"
+                style={{ 
+                  borderColor: index === 0 ? 'hsl(var(--primary))' : 
+                               index === 1 ? 'hsl(var(--secondary))' : 
+                               index === 2 ? 'hsl(var(--accent))' : 
+                               'hsl(var(--success))'
+                }}
               >
                 <div className="space-y-6">
                   <div className="flex items-start gap-4">
-                    <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
-                      <Icon className="w-7 h-7 text-primary" />
+                    <div 
+                      className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform"
+                      style={{ 
+                        backgroundColor: index === 0 ? 'hsl(var(--primary) / 0.1)' : 
+                                        index === 1 ? 'hsl(var(--secondary) / 0.1)' : 
+                                        index === 2 ? 'hsl(var(--accent) / 0.1)' : 
+                                        'hsl(var(--success) / 0.1)'
+                      }}
+                    >
+                      <Icon 
+                        className="w-7 h-7"
+                        style={{ 
+                          color: index === 0 ? 'hsl(var(--primary))' : 
+                                 index === 1 ? 'hsl(var(--secondary))' : 
+                                 index === 2 ? 'hsl(var(--accent))' : 
+                                 'hsl(var(--success))'
+                        }}
+                      />
                     </div>
                     <div>
                       <h3 className="text-2xl font-bold text-foreground mb-2">{useCase.title}</h3>

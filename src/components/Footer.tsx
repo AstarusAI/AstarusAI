@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export const Footer = () => {
   const currentYear = new Date().getFullYear();
 
@@ -8,7 +10,7 @@ export const Footer = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
             {/* Company info */}
             <div className="space-y-4">
-              <h3 className="text-xl font-bold text-primary">Astarus</h3>
+              <h3 className="text-xl font-bold gradient-text-colorful">Astarus</h3>
               <p className="text-sm text-muted-foreground">
                 Building the next generation of continuously learning AI systems.
               </p>
@@ -18,10 +20,10 @@ export const Footer = () => {
             <div className="space-y-4">
               <h4 className="font-semibold text-foreground">Company</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-primary transition-colors">About</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Technology</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Investors</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Contact</a></li>
+                <li><Link to="/team" className="hover:text-primary transition-colors">About</Link></li>
+                <li><Link to="/technology" className="hover:text-primary transition-colors">Technology</Link></li>
+                <li><Link to="/investors" className="hover:text-primary transition-colors">Investors</Link></li>
+                <li><Link to="/contact" className="hover:text-primary transition-colors">Contact</Link></li>
               </ul>
             </div>
 

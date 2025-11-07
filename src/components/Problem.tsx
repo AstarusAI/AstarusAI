@@ -41,11 +41,33 @@ export const Problem = () => {
             return (
               <Card
                 key={index}
-                className="p-6 bg-card border card-hover"
+                className="p-6 bg-card border-2 card-hover"
+                style={{ 
+                  borderColor: index === 0 ? 'hsl(var(--primary))' : 
+                               index === 1 ? 'hsl(var(--secondary))' : 
+                               index === 2 ? 'hsl(var(--accent))' : 
+                               'hsl(var(--success))'
+                }}
               >
                 <div className="space-y-4">
-                  <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Icon className="w-6 h-6 text-primary" />
+                  <div 
+                    className="w-12 h-12 rounded-lg flex items-center justify-center"
+                    style={{ 
+                      backgroundColor: index === 0 ? 'hsl(var(--primary) / 0.1)' : 
+                                      index === 1 ? 'hsl(var(--secondary) / 0.1)' : 
+                                      index === 2 ? 'hsl(var(--accent) / 0.1)' : 
+                                      'hsl(var(--success) / 0.1)'
+                    }}
+                  >
+                    <Icon 
+                      className="w-6 h-6"
+                      style={{ 
+                        color: index === 0 ? 'hsl(var(--primary))' : 
+                               index === 1 ? 'hsl(var(--secondary))' : 
+                               index === 2 ? 'hsl(var(--accent))' : 
+                               'hsl(var(--success))'
+                      }}
+                    />
                   </div>
                   <h3 className="text-xl font-bold text-foreground">{problem.title}</h3>
                   <p className="text-muted-foreground leading-relaxed">{problem.description}</p>

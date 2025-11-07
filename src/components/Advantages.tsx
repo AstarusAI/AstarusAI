@@ -30,7 +30,7 @@ const advantages = [
 
 export const Advantages = () => {
   return (
-    <section className="py-24 px-4 bg-secondary/30">
+    <section className="py-24 px-4 bg-muted/30">
       <div className="container">
         <div className="max-w-3xl mx-auto text-center mb-16 space-y-4">
           <h2 className="text-foreground">Why This Changes Everything</h2>
@@ -45,14 +45,46 @@ export const Advantages = () => {
             return (
               <Card
                 key={index}
-                className="p-8 bg-card border card-hover"
+                className="p-8 bg-card border-2 card-hover"
+                style={{ 
+                  borderColor: index === 0 ? 'hsl(var(--primary))' : 
+                               index === 1 ? 'hsl(var(--secondary))' : 
+                               index === 2 ? 'hsl(var(--accent))' : 
+                               'hsl(var(--success))'
+                }}
               >
                 <div className="space-y-4">
                   <div className="flex items-start justify-between">
-                    <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center">
-                      <Icon className="w-7 h-7 text-primary" />
+                    <div 
+                      className="w-14 h-14 rounded-xl flex items-center justify-center"
+                      style={{ 
+                        backgroundColor: index === 0 ? 'hsl(var(--primary) / 0.1)' : 
+                                        index === 1 ? 'hsl(var(--secondary) / 0.1)' : 
+                                        index === 2 ? 'hsl(var(--accent) / 0.1)' : 
+                                        'hsl(var(--success) / 0.1)'
+                      }}
+                    >
+                      <Icon 
+                        className="w-7 h-7"
+                        style={{ 
+                          color: index === 0 ? 'hsl(var(--primary))' : 
+                                 index === 1 ? 'hsl(var(--secondary))' : 
+                                 index === 2 ? 'hsl(var(--accent))' : 
+                                 'hsl(var(--success))'
+                        }}
+                      />
                     </div>
-                    <div className="text-3xl font-bold text-primary">{advantage.metric}</div>
+                    <div 
+                      className="text-3xl font-bold"
+                      style={{ 
+                        color: index === 0 ? 'hsl(var(--primary))' : 
+                               index === 1 ? 'hsl(var(--secondary))' : 
+                               index === 2 ? 'hsl(var(--accent))' : 
+                               'hsl(var(--success))'
+                      }}
+                    >
+                      {advantage.metric}
+                    </div>
                   </div>
                   <h3 className="text-2xl font-bold text-foreground">{advantage.title}</h3>
                   <p className="text-muted-foreground leading-relaxed">{advantage.description}</p>

@@ -26,7 +26,7 @@ export const Hero = () => {
           {/* Main heading */}
           <h1 className="text-foreground">
             AI That{" "}
-            <span className="text-primary">Learns</span>
+            <span className="gradient-text-colorful">Learns</span>
             {" "}Continuously
           </h1>
 
@@ -37,7 +37,7 @@ export const Hero = () => {
 
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-            <Button variant="hero" size="lg" className="group">
+            <Button variant="hero" size="lg" className="group gradient-bg">
               For Investors
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </Button>
@@ -54,12 +54,12 @@ export const Hero = () => {
             </div>
             <div className="hidden sm:block w-px h-12 bg-border" />
             <div>
-              <div className="text-4xl font-bold text-primary">Seconds</div>
+              <div className="text-4xl font-bold text-secondary">Seconds</div>
               <div className="text-sm text-muted-foreground">To Train</div>
             </div>
             <div className="hidden sm:block w-px h-12 bg-border" />
             <div>
-              <div className="text-4xl font-bold text-primary">Zero</div>
+              <div className="text-4xl font-bold text-accent">Zero</div>
               <div className="text-sm text-muted-foreground">External Dependencies</div>
             </div>
           </div>

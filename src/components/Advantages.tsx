@@ -1,5 +1,34 @@
 import { Card } from "@/components/ui/card";
 import { TrendingUp, Zap, Shield, Layers } from "lucide-react";
+import { motion } from "framer-motion";
+import { fadeIn, fadeInUp, staggerContainer, scaleOnHover } from "@/lib/motion";
+
+const colorThemes = [
+  {
+    border: "border-primary",
+    iconBg: "bg-primary/10",
+    iconColor: "text-primary",
+    metricColor: "text-primary",
+  },
+  {
+    border: "border-secondary",
+    iconBg: "bg-secondary/10",
+    iconColor: "text-secondary",
+    metricColor: "text-secondary",
+  },
+  {
+    border: "border-accent",
+    iconBg: "bg-accent/10",
+    iconColor: "text-accent",
+    metricColor: "text-accent",
+  },
+  {
+    border: "border-success",
+    iconBg: "bg-success/10",
+    iconColor: "text-success",
+    metricColor: "text-success",
+  },
+];
 
 const advantages = [
   {
@@ -30,70 +59,58 @@ const advantages = [
 
 export const Advantages = () => {
   return (
-    <section className="py-24 px-4 bg-muted/30">
+    <motion.section
+      className="py-24 px-4 bg-muted/30"
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.2 }}
+      variants={fadeIn()}
+    >
       <div className="container">
-        <div className="max-w-3xl mx-auto text-center mb-16 space-y-4">
+        <motion.div
+          className="max-w-3xl mx-auto text-center mb-16 space-y-4"
+          variants={fadeInUp(0.1)}
+        >
           <h2 className="text-foreground">Why This Changes Everything</h2>
           <p className="text-xl text-muted-foreground">
             Proven results that make continuous learning practical and cost-effective for the first time.
           </p>
-        </div>
+        </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto"
+          variants={staggerContainer(0.2, 0.2)}
+        >
           {advantages.map((advantage, index) => {
             const Icon = advantage.icon;
+            const theme = colorThemes[index] ?? colorThemes[0];
             return (
-              <Card
+              <motion.div
                 key={index}
-                className="p-8 bg-card border-2 card-hover"
-                style={{ 
-                  borderColor: index === 0 ? 'hsl(var(--primary))' : 
-                               index === 1 ? 'hsl(var(--secondary))' : 
-                               index === 2 ? 'hsl(var(--accent))' : 
-                               'hsl(var(--success))'
-                }}
+                variants={fadeInUp(index * 0.05)}
+                whileHover={scaleOnHover.whileHover}
+                whileTap={scaleOnHover.whileTap}
+                transition={scaleOnHover.transition}
               >
-                <div className="space-y-4">
-                  <div className="flex items-start justify-between">
-                    <div 
-                      className="w-14 h-14 rounded-xl flex items-center justify-center"
-                      style={{ 
-                        backgroundColor: index === 0 ? 'hsl(var(--primary) / 0.1)' : 
-                                        index === 1 ? 'hsl(var(--secondary) / 0.1)' : 
-                                        index === 2 ? 'hsl(var(--accent) / 0.1)' : 
-                                        'hsl(var(--success) / 0.1)'
-                      }}
-                    >
-                      <Icon 
-                        className="w-7 h-7"
-                        style={{ 
-                          color: index === 0 ? 'hsl(var(--primary))' : 
-                                 index === 1 ? 'hsl(var(--secondary))' : 
-                                 index === 2 ? 'hsl(var(--accent))' : 
-                                 'hsl(var(--success))'
-                        }}
-                      />
+                <Card className={`p-8 bg-card border-2 card-hover ${theme.border}`}>
+                  <div className="space-y-4">
+                    <div className="flex items-start justify-between">
+                      <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${theme.iconBg}`}>
+                        <Icon className={`w-7 h-7 ${theme.iconColor}`} />
+                      </div>
+                      <div className={`text-3xl font-bold ${theme.metricColor}`}>
+                        {advantage.metric}
+                      </div>
                     </div>
-                    <div 
-                      className="text-3xl font-bold"
-                      style={{ 
-                        color: index === 0 ? 'hsl(var(--primary))' : 
-                               index === 1 ? 'hsl(var(--secondary))' : 
-                               index === 2 ? 'hsl(var(--accent))' : 
-                               'hsl(var(--success))'
-                      }}
-                    >
-                      {advantage.metric}
-                    </div>
+                    <h3 className="text-2xl font-bold text-foreground">{advantage.title}</h3>
+                    <p className="text-muted-foreground leading-relaxed">{advantage.description}</p>
                   </div>
-                  <h3 className="text-2xl font-bold text-foreground">{advantage.title}</h3>
-                  <p className="text-muted-foreground leading-relaxed">{advantage.description}</p>
-                </div>
-              </Card>
+                </Card>
+              </motion.div>
             );
           })}
-        </div>
+        </motion.div>
       </div>
-    </section>
+    </motion.section>
   );
 };

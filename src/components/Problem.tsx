@@ -1,5 +1,30 @@
 import { Card } from "@/components/ui/card";
 import { AlertCircle, DollarSign, Clock, Zap } from "lucide-react";
+import { motion } from "framer-motion";
+import { fadeInUp, staggerContainer, scaleOnHover } from "@/lib/motion";
+
+const colorThemes = [
+  {
+    border: "border-primary",
+    iconBg: "bg-primary/10",
+    iconColor: "text-primary",
+  },
+  {
+    border: "border-secondary",
+    iconBg: "bg-secondary/10",
+    iconColor: "text-secondary",
+  },
+  {
+    border: "border-accent",
+    iconBg: "bg-accent/10",
+    iconColor: "text-accent",
+  },
+  {
+    border: "border-success",
+    iconBg: "bg-success/10",
+    iconColor: "text-success",
+  },
+];
 
 const problems = [
   {
@@ -26,57 +51,53 @@ const problems = [
 
 export const Problem = () => {
   return (
-    <section className="py-24 px-4">
+    <motion.section
+      className="py-24 px-4"
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.2 }}
+      variants={fadeInUp(0)}
+    >
       <div className="container">
-        <div className="max-w-3xl mx-auto text-center mb-16 space-y-4">
+        <motion.div
+          className="max-w-3xl mx-auto text-center mb-16 space-y-4"
+          variants={fadeInUp(0.1)}
+        >
           <h2 className="text-foreground">The Problem</h2>
           <p className="text-xl text-muted-foreground">
             Current LLMs lack the ability to learn continuously and adapt in real-time — a fundamental limitation that hinders personalization and enterprise adoption.
           </p>
-        </div>
+        </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto"
+          variants={staggerContainer(0.15, 0.1)}
+        >
           {problems.map((problem, index) => {
             const Icon = problem.icon;
+            const theme = colorThemes[index] ?? colorThemes[0];
             return (
-              <Card
+              <motion.div
                 key={index}
-                className="p-6 bg-card border-2 card-hover"
-                style={{ 
-                  borderColor: index === 0 ? 'hsl(var(--primary))' : 
-                               index === 1 ? 'hsl(var(--secondary))' : 
-                               index === 2 ? 'hsl(var(--accent))' : 
-                               'hsl(var(--success))'
-                }}
+                variants={fadeInUp(index * 0.05)}
+                whileHover={scaleOnHover.whileHover}
+                whileTap={scaleOnHover.whileTap}
+                transition={scaleOnHover.transition}
               >
-                <div className="space-y-4">
-                  <div 
-                    className="w-12 h-12 rounded-lg flex items-center justify-center"
-                    style={{ 
-                      backgroundColor: index === 0 ? 'hsl(var(--primary) / 0.1)' : 
-                                      index === 1 ? 'hsl(var(--secondary) / 0.1)' : 
-                                      index === 2 ? 'hsl(var(--accent) / 0.1)' : 
-                                      'hsl(var(--success) / 0.1)'
-                    }}
-                  >
-                    <Icon 
-                      className="w-6 h-6"
-                      style={{ 
-                        color: index === 0 ? 'hsl(var(--primary))' : 
-                               index === 1 ? 'hsl(var(--secondary))' : 
-                               index === 2 ? 'hsl(var(--accent))' : 
-                               'hsl(var(--success))'
-                      }}
-                    />
+                <Card className={`p-6 bg-card border-2 card-hover ${theme.border}`}>
+                  <div className="space-y-4">
+                    <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${theme.iconBg}`}>
+                      <Icon className={`w-6 h-6 ${theme.iconColor}`} />
+                    </div>
+                    <h3 className="text-xl font-bold text-foreground">{problem.title}</h3>
+                    <p className="text-muted-foreground leading-relaxed">{problem.description}</p>
                   </div>
-                  <h3 className="text-xl font-bold text-foreground">{problem.title}</h3>
-                  <p className="text-muted-foreground leading-relaxed">{problem.description}</p>
-                </div>
-              </Card>
+                </Card>
+              </motion.div>
             );
           })}
-        </div>
+        </motion.div>
       </div>
-    </section>
+    </motion.section>
   );
 };

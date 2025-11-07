@@ -11,7 +11,7 @@ const features = [
   },
   {
     title: "Native Integration",
-    description: "Uses the model's internal embeddings — no external vector stores or complex RAG infrastructure needed.",
+    description: "Uses the model's internal embeddings — no complex RAG infrastructure needed.",
   },
   {
     title: "Cost-Effective",
@@ -39,7 +39,7 @@ export const Solution = () => {
         >
           <h2 className="text-foreground">Our Solution</h2>
           <p className="text-xl text-muted-foreground leading-relaxed">
-            We've developed a <span className="text-primary font-semibold">memory-augmented transformer architecture</span> that adds a small, trainable lookup table (LUT) layer to the final transformer block.
+            We've developed a <span className="text-primary font-semibold">memory-augmented transformer architecture</span> that adds a small, trainable lookup table (LUT) layer to the some of the transformer blocks.
           </p>
         </motion.div>
 
@@ -67,7 +67,7 @@ export const Solution = () => {
               Learn how our memory-augmented architecture enables real-time model adaptation.
             </p>
             <p className="text-muted-foreground leading-relaxed">
-              During inference, the LUT maps activation keys to corrective logits that are added to the model output. Updating the LUT is as simple as adding rows to a table — no backpropagation, no expensive retraining, no external dependencies.
+              During inference, the LUT maps activation keys to corrective logits that are added to the model output. Updating the LUT is as simple as adding rows to a table, no external dependencies.
             </p>
             <motion.div className="pt-4 space-y-4" variants={staggerContainer(0.1, 0.1)}>
               {features.map((feature, index) => (
@@ -96,7 +96,7 @@ export const Solution = () => {
                 <motion.div className="space-y-4" variants={staggerContainer(0.15, 0.1)}>
                   <motion.div className="p-4 rounded-lg bg-secondary border" variants={fadeInUp(0.05)}>
                     <div className="text-sm font-semibold text-primary mb-2">Step 1: Inference</div>
-                    <p className="text-sm text-muted-foreground">Model generates activations in the final transformer block</p>
+                    <p className="text-sm text-muted-foreground">Model generates transformations in some of the transformer blocks</p>
                   </motion.div>
 
                   <div className="flex justify-center">

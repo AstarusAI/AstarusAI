@@ -51,7 +51,7 @@ export const Hero = () => {
             className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed"
             variants={fadeInUp(0.2)}
           >
-            Introducing memory-augmented transformers: the breakthrough that enables real-time learning and adaptation without expensive retraining or complex infrastructure.
+            Introducing memory-augmented transformers: the breakthrough that enables real-time learning and adaptation without expensive fine-tuning or complex infrastructure.
           </motion.p>
 
           {/* CTAs */}
@@ -74,7 +74,7 @@ export const Hero = () => {
             variants={fadeInUp(0.4)}
           >
             <div>
-              <div className="text-4xl font-bold text-primary">15-40%</div>
+              <div className="text-4xl font-bold text-primary">Up to 75%</div>
               <div className="text-sm text-muted-foreground">Perplexity Reduction</div>
             </div>
             <div className="hidden sm:block w-px h-12 bg-border" />

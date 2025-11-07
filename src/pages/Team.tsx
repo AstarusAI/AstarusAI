@@ -22,7 +22,7 @@ export default function Team() {
       </section>
 
       {/* Team Photo */}
-      <section className="py-12 px-4">
+      {/* <section className="py-12 px-4">
         <div className="container">
           <div className="max-w-5xl mx-auto">
             <img 
@@ -32,7 +32,7 @@ export default function Team() {
             />
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Team Members */}
       <section className="py-20 px-4">

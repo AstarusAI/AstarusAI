@@ -35,8 +35,8 @@ export default function Contact() {
                 <p className="text-muted-foreground text-sm mb-2">
                   For general inquiries and partnerships
                 </p>
-                <a href="mailto:hello@astarus.ai" className="text-primary hover:underline">
-                  hello@astarus.ai
+                <a href="mailto:rafayel.latif@gmail.com" className="text-primary hover:underline">
+                  rafayel.latif@gmail.com
                 </a>
               </Card>
 
@@ -47,17 +47,17 @@ export default function Contact() {
                   Monday to Friday, 9am - 5pm GMT
                 </p>
                 <a href="tel:+44123456789" className="text-secondary hover:underline">
-                  +44 123 456 789
+                  +44 7957 456969
                 </a>
               </Card>
 
-              <Card className="p-6 border-2 border-accent/20">
+              {/* <Card className="p-6 border-2 border-accent/20">
                 <MapPin className="w-8 h-8 text-accent mb-4" />
                 <h3 className="text-lg font-bold mb-2 text-foreground">Visit Us</h3>
                 <p className="text-muted-foreground text-sm">
                   London, United Kingdom
                 </p>
-              </Card>
+              </Card> */}
             </div>
 
             {/* Contact Form */}

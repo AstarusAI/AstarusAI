@@ -34,13 +34,13 @@ const advantages = [
   {
     icon: TrendingUp,
     title: "Superior Performance",
-    metric: "15-40%",
+    metric: "75%",
     description: "Perplexity reduction when retrained on domain-specific data across model sizes from 1.6M to 63M parameters.",
   },
   {
     icon: Zap,
     title: "Lightning Fast Updates",
-    metric: "< 5 sec",
+    metric: "< 20 sec",
     description: "Train on thousands of tokens in seconds. No expensive GPU clusters or lengthy retraining cycles required.",
   },
   {

@@ -10,14 +10,14 @@ import { fadeIn, fadeInUp, staggerContainer, scaleOnHover } from "@/lib/motion";
 const performanceMetrics = [
   {
     icon: TrendingUp,
-    value: "15-40%",
+    value: "75%",
     label: "Perplexity Reduction",
     borderClass: "border-primary/20",
     textClass: "text-primary",
   },
   {
     icon: Zap,
-    value: "< 5s",
+    value: "< 20s",
     label: "Training Time",
     borderClass: "border-secondary/20",
     textClass: "text-secondary",
@@ -51,7 +51,7 @@ const workflowSteps = [
     colorClass: "text-secondary",
     borderClass: "border-l-secondary",
     description:
-      "Add a lightweight lookup table layer to the final transformer block. This layer maps activation patterns to corrective logits without modifying the base model weights.",
+      "Add a lightweight lookup table layer to the some of the transformer blocks. This layer stores high dimensional transformations without modifying the base model weights.",
   },
   {
     title: "Step 3: Continuous Adaptation",

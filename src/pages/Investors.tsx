@@ -130,7 +130,7 @@ export default function Investors() {
                 <ul className="space-y-2 text-muted-foreground">
                   <li className="flex items-start gap-2">
                     <span className="text-secondary mt-1">•</span>
-                    <span>15-40% performance improvement on domain-specific tasks</span>
+                    <span>75% decrease in perplexity on domain-specific tasks</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-secondary mt-1">•</span>
@@ -175,7 +175,7 @@ export default function Investors() {
                 <div className="space-y-4 text-muted-foreground">
                   <div>
                     <h4 className="font-semibold text-foreground mb-2">Current Status</h4>
-                    <p>Working prototype with proven benchmarks across model sizes (1.6M - 63M parameters)</p>
+                    <p>Working prototype with proven benchmarks across model sizes (1.6M - 78M parameters)</p>
                   </div>
                   <div>
                     <h4 className="font-semibold text-foreground mb-2">Next 6 Months</h4>

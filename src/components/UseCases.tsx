@@ -45,7 +45,7 @@ export const UseCases = () => {
             return (
               <Card
                 key={index}
-                className="p-8 bg-card/50 backdrop-blur-sm border-primary/10 card-hover group"
+                className="p-8 bg-card border card-hover group"
               >
                 <div className="space-y-6">
                   <div className="flex items-start gap-4">

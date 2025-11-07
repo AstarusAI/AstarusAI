@@ -41,7 +41,7 @@ export const Problem = () => {
             return (
               <Card
                 key={index}
-                className="p-6 bg-card/50 backdrop-blur-sm border-primary/10 card-hover"
+                className="p-6 bg-card border card-hover"
               >
                 <div className="space-y-4">
                   <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">

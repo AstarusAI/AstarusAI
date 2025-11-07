@@ -5,11 +5,9 @@ import { ArrowRight, Mail } from "lucide-react";
 export const CTA = () => {
   return (
     <section className="py-24 px-4 relative overflow-hidden">
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/5 to-transparent" />
       
       <div className="container relative">
-        <Card className="max-w-4xl mx-auto p-12 bg-card/80 backdrop-blur-sm border-primary/20 glow-effect">
+        <Card className="max-w-4xl mx-auto p-12 bg-card border shadow-lg">
           <div className="text-center space-y-8">
             <h2 className="text-foreground">Ready to Learn More?</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
@@ -27,7 +25,7 @@ export const CTA = () => {
               </Button>
             </div>
 
-            <div className="pt-8 border-t border-primary/20">
+            <div className="pt-8 border-t border-border">
               <p className="text-sm text-muted-foreground">
                 For partnership inquiries, technical questions, or investor relations, reach out to us.
               </p>

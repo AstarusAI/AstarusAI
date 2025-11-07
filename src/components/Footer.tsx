@@ -2,13 +2,13 @@ export const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="py-12 px-4 border-t border-primary/10">
+    <footer className="py-12 px-4 border-t border-border bg-secondary/20">
       <div className="container">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
             {/* Company info */}
             <div className="space-y-4">
-              <h3 className="text-xl font-bold gradient-text">Astarus</h3>
+              <h3 className="text-xl font-bold text-primary">Astarus</h3>
               <p className="text-sm text-muted-foreground">
                 Building the next generation of continuously learning AI systems.
               </p>
@@ -37,7 +37,7 @@ export const Footer = () => {
             </div>
           </div>
 
-          <div className="pt-8 border-t border-primary/10 text-center text-sm text-muted-foreground">
+          <div className="pt-8 border-t border-border text-center text-sm text-muted-foreground">
             <p>&copy; {currentYear} Astarus. All rights reserved.</p>
           </div>
         </div>

@@ -8,43 +8,38 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 220 18% 8%;
-    --foreground: 210 40% 98%;
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
 
-    --card: 220 20% 12%;
-    --card-foreground: 210 40% 98%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
 
-    --popover: 220 20% 12%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
 
     --primary: 199 89% 48%;
-    --primary-foreground: 220 18% 8%;
-    --primary-glow: 199 89% 65%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 17% 20%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
 
-    --muted: 220 17% 20%;
-    --muted-foreground: 215 16% 65%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
 
     --accent: 199 89% 48%;
-    --accent-foreground: 220 18% 8%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 220 17% 20%;
-    --input: 220 17% 20%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
     --ring: 199 89% 48%;
 
     --radius: 0.75rem;
 
     /* Custom design tokens */
-    --gradient-primary: linear-gradient(135deg, hsl(199 89% 48%), hsl(199 89% 65%));
-    --gradient-mesh: radial-gradient(at 0% 0%, hsla(199, 89%, 48%, 0.15) 0px, transparent 50%),
-                     radial-gradient(at 100% 100%, hsla(280, 70%, 50%, 0.1) 0px, transparent 50%);
-    --shadow-glow: 0 0 60px hsla(199, 89%, 48%, 0.3);
-    --shadow-card: 0 10px 40px hsla(220, 20%, 5%, 0.4);
+    --shadow-card: 0 2px 8px hsla(222, 47%, 11%, 0.08);
     
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
@@ -57,8 +52,6 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground antialiased;
-    background-image: var(--gradient-mesh);
-    background-attachment: fixed;
     scroll-behavior: smooth;
   }
 
@@ -80,18 +73,7 @@ All colors MUST be HSL.
 }
 
 @layer utilities {
-  .gradient-text {
-    background: linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-glow)));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
   .card-hover {
-    @apply transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_40px_hsla(199,89%,48%,0.2)];
-  }
-
-  .glow-effect {
-    box-shadow: var(--shadow-glow);
+    @apply transition-all duration-300 hover:scale-[1.02] hover:shadow-lg;
   }
 }

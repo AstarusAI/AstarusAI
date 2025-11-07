@@ -45,14 +45,14 @@ export const Advantages = () => {
             return (
               <Card
                 key={index}
-                className="p-8 bg-card/80 backdrop-blur-sm border-primary/20 card-hover"
+                className="p-8 bg-card border card-hover"
               >
                 <div className="space-y-4">
                   <div className="flex items-start justify-between">
                     <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center">
                       <Icon className="w-7 h-7 text-primary" />
                     </div>
-                    <div className="text-3xl font-bold gradient-text">{advantage.metric}</div>
+                    <div className="text-3xl font-bold text-primary">{advantage.metric}</div>
                   </div>
                   <h3 className="text-2xl font-bold text-foreground">{advantage.title}</h3>
                   <p className="text-muted-foreground leading-relaxed">{advantage.description}</p>

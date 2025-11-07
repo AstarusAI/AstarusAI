@@ -16,9 +16,9 @@ export default function Investors() {
           <img 
             src={investorsBg} 
             alt="Investors Background" 
-            className="w-full h-full object-cover opacity-20"
+            className="w-full h-full object-cover opacity-70"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-background via-background/90 to-background" />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/10 via-background/40 to-background/80" />
         </div>
         
         <div className="container relative z-10">

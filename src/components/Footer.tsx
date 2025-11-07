@@ -27,14 +27,13 @@ export const Footer = () => {
               </ul>
             </div>
 
-            {/* Resources */}
+            {/* Contact */}
             <div className="space-y-4">
-              <h4 className="font-semibold text-foreground">Resources</h4>
+              <h4 className="font-semibold text-foreground">Contact</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-primary transition-colors">Research</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Documentation</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-primary transition-colors">Terms of Service</a></li>
+                <li><a href="mailto:hello@astarus.ai" className="hover:text-primary transition-colors">hello@astarus.ai</a></li>
+                <li><a href="tel:+44123456789" className="hover:text-primary transition-colors">+44 123 456 789</a></li>
+                <li><Link to="/contact" className="hover:text-primary transition-colors">Contact Form</Link></li>
               </ul>
             </div>
           </div>

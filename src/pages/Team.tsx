@@ -52,10 +52,10 @@ export default function Team() {
                   AI researcher with a focus on continuous learning architectures. Leading the development of memory-augmented transformers.
                 </p>
                 <div className="flex justify-center gap-4 pt-2">
-                  <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+                  <a href="#" className="text-muted-foreground hover:text-primary transition-colors" aria-label="Rafayel on LinkedIn">
                     <Linkedin className="w-5 h-5" />
                   </a>
-                  <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
+                  <a href="#" className="text-muted-foreground hover:text-primary transition-colors" aria-label="Email Rafayel">
                     <Mail className="w-5 h-5" />
                   </a>
                 </div>
@@ -76,39 +76,16 @@ export default function Team() {
                   Focused on investor relations, funding strategy, and strategic partnerships to accelerate Astarus's growth.
                 </p>
                 <div className="flex justify-center gap-4 pt-2">
-                  <a href="#" className="text-muted-foreground hover:text-secondary transition-colors">
+                  <a href="#" className="text-muted-foreground hover:text-secondary transition-colors" aria-label="Alfred on LinkedIn">
                     <Linkedin className="w-5 h-5" />
                   </a>
-                  <a href="#" className="text-muted-foreground hover:text-secondary transition-colors">
+                  <a href="#" className="text-muted-foreground hover:text-secondary transition-colors" aria-label="Email Alfred">
                     <Mail className="w-5 h-5" />
                   </a>
                 </div>
               </div>
             </Card>
 
-            {/* Research Lead */}
-            <Card className="p-6 card-hover border-2 border-accent/20">
-              <div className="space-y-4">
-                <div className="w-20 h-20 rounded-full bg-accent flex items-center justify-center text-4xl font-bold text-white mx-auto">
-                  E
-                </div>
-                <div className="text-center">
-                  <h3 className="text-xl font-bold text-foreground">Expert Researcher</h3>
-                  <p className="text-accent font-semibold">ML Research Lead</p>
-                </div>
-                <p className="text-sm text-muted-foreground text-center">
-                  PhD in Machine Learning with expertise in transformer architectures and optimization algorithms.
-                </p>
-                <div className="flex justify-center gap-4 pt-2">
-                  <a href="#" className="text-muted-foreground hover:text-accent transition-colors">
-                    <Linkedin className="w-5 h-5" />
-                  </a>
-                  <a href="#" className="text-muted-foreground hover:text-accent transition-colors">
-                    <Mail className="w-5 h-5" />
-                  </a>
-                </div>
-              </div>
-            </Card>
           </div>
         </div>
       </section>

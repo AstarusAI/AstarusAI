@@ -4,6 +4,39 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { TrendingUp, Users, Rocket, Target, ArrowRight } from "lucide-react";
 import investorsBg from "@/assets/investors-bg.jpg";
+import { motion } from "framer-motion";
+import { fadeIn, fadeInUp, staggerContainer, scaleOnHover } from "@/lib/motion";
+
+const valuePropositionCards = [
+  {
+    title: "Huge Market",
+    description: "$1.3T AI market by 2032, with personalization as a key driver",
+    icon: TrendingUp,
+    borderClass: "border-primary/20",
+    iconColor: "text-primary",
+  },
+  {
+    title: "First Mover",
+    description: "Novel architecture with proven results and defensible IP",
+    icon: Rocket,
+    borderClass: "border-secondary/20",
+    iconColor: "text-secondary",
+  },
+  {
+    title: "Clear Path",
+    description: "B2B and B2C opportunities across multiple verticals",
+    icon: Target,
+    borderClass: "border-accent/20",
+    iconColor: "text-accent",
+  },
+  {
+    title: "Strong Team",
+    description: "Experienced AI researchers with deep technical expertise",
+    icon: Users,
+    borderClass: "border-success/20",
+    iconColor: "text-success",
+  },
+];
 
 export default function Investors() {
   return (
@@ -11,7 +44,13 @@ export default function Investors() {
       <Navbar />
       
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 px-4 overflow-hidden">
+      <motion.section
+        className="relative pt-32 pb-20 px-4 overflow-hidden"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+        variants={fadeIn()}
+      >
         <div className="absolute inset-0">
           <img 
             src={investorsBg} 
@@ -22,53 +61,49 @@ export default function Investors() {
         </div>
         
         <div className="container relative z-10">
-          <div className="max-w-4xl mx-auto text-center space-y-6 animate-fade-in">
+          <motion.div
+            className="max-w-4xl mx-auto text-center space-y-6"
+            variants={fadeInUp(0.1)}
+          >
             <h1 className="gradient-text-colorful">Investment Opportunity</h1>
             <p className="text-xl text-muted-foreground">
               Join us in revolutionizing AI with continuously learning models
             </p>
-          </div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Value Proposition */}
-      <section className="py-20 px-4">
+      <motion.section
+        className="py-20 px-4"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+        variants={fadeIn()}
+      >
         <div className="container">
-          <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="p-6 card-hover border-2 border-primary/20">
-              <TrendingUp className="w-12 h-12 text-primary mb-4" />
-              <h3 className="text-xl font-bold mb-2 text-foreground">Huge Market</h3>
-              <p className="text-sm text-muted-foreground">
-                $1.3T AI market by 2032, with personalization as a key driver
-              </p>
-            </Card>
-            
-            <Card className="p-6 card-hover border-2 border-secondary/20">
-              <Rocket className="w-12 h-12 text-secondary mb-4" />
-              <h3 className="text-xl font-bold mb-2 text-foreground">First Mover</h3>
-              <p className="text-sm text-muted-foreground">
-                Novel architecture with proven results and defensible IP
-              </p>
-            </Card>
-            
-            <Card className="p-6 card-hover border-2 border-accent/20">
-              <Target className="w-12 h-12 text-accent mb-4" />
-              <h3 className="text-xl font-bold mb-2 text-foreground">Clear Path</h3>
-              <p className="text-sm text-muted-foreground">
-                B2B and B2C opportunities across multiple verticals
-              </p>
-            </Card>
-            
-            <Card className="p-6 card-hover border-2 border-success/20">
-              <Users className="w-12 h-12 text-success mb-4" />
-              <h3 className="text-xl font-bold mb-2 text-foreground">Strong Team</h3>
-              <p className="text-sm text-muted-foreground">
-                Experienced AI researchers with deep technical expertise
-              </p>
-            </Card>
-          </div>
+          <motion.div
+            className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+            variants={staggerContainer(0.2, 0.1)}
+          >
+            {valuePropositionCards.map(({ title, description, icon: Icon, borderClass, iconColor }, index) => (
+              <motion.div
+                key={title}
+                variants={fadeInUp(index * 0.05)}
+                whileHover={scaleOnHover.whileHover}
+                whileTap={scaleOnHover.whileTap}
+                transition={scaleOnHover.transition}
+              >
+                <Card className={`p-6 card-hover border-2 ${borderClass}`}>
+                  <Icon className={`w-12 h-12 mb-4 ${iconColor}`} />
+                  <h3 className="text-xl font-bold mb-2 text-foreground">{title}</h3>
+                  <p className="text-sm text-muted-foreground">{description}</p>
+                </Card>
+              </motion.div>
+            ))}
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       {/* The Opportunity */}
       <section className="py-20 px-4 bg-muted/30">

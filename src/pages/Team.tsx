@@ -43,10 +43,10 @@ export default function Team() {
                   AI researcher with a focus on continuous learning architectures. Leading the development of memory-augmented transformers.
                 </p>
                 <div className="flex justify-center gap-4 pt-2">
-                  <a href="#" className="text-muted-foreground hover:text-primary transition-colors" aria-label="Rafayel on LinkedIn">
+                  <a href="https://www.linkedin.com/in/rafayel-latif-490aa724a/" className="text-muted-foreground hover:text-primary transition-colors" aria-label="Rafayel on LinkedIn">
                     <Linkedin className="w-5 h-5" />
                   </a>
-                  <a href="#" className="text-muted-foreground hover:text-primary transition-colors" aria-label="Email Rafayel">
+                  <a href="mailto:rafayel.latif@gmail.com" className="text-muted-foreground hover:text-primary transition-colors" aria-label="Email Rafayel">
                     <Mail className="w-5 h-5" />
                   </a>
                 </div>

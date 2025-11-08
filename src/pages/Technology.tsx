@@ -126,8 +126,8 @@ export default function Technology() {
                 <motion.div className="flex gap-3" variants={fadeInUp(0.05)}>
                   <CheckCircle2 className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
                   <div>
-                    <h4 className="font-semibold text-foreground mb-1">No Backpropagation Required</h4>
-                    <p className="text-muted-foreground">Updates happen through simple table lookups, not expensive gradient descent</p>
+                    <h4 className="font-semibold text-foreground mb-1">Lightweight Gradient Updates</h4>
+                    <p className="text-muted-foreground">Gradients are computed only for the LUT, not the full model, allowing fast, low-cost adaptation without retraining.</p>
                   </div>
                 </motion.div>
                 <motion.div className="flex gap-3" variants={fadeInUp(0.1)}>

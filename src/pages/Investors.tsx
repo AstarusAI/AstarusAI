@@ -65,7 +65,7 @@ export default function Investors() {
             className="max-w-4xl mx-auto text-center space-y-6"
             variants={fadeInUp(0.1)}
           >
-            <h1 className="gradient-text-colorful">Investment Opportunity</h1>
+            <h1 className="text-primary">Investment Opportunity</h1>
             <p className="text-xl text-muted-foreground">
               Join us in revolutionizing AI with continuously learning models
             </p>
@@ -195,24 +195,22 @@ export default function Investors() {
       {/* CTA Section */}
       <section className="py-20 px-4">
         <div className="container">
-          <Card className="max-w-4xl mx-auto p-12 text-center gradient-bg text-white">
-            <h2 className="text-white mb-6">Let's Build the Future Together</h2>
-            <p className="text-lg mb-8 text-white/90">
+          <Card className="max-w-4xl mx-auto p-12 text-center bg-primary text-primary-foreground border-primary">
+            <h2 className="text-primary-foreground mb-6">Let's Build the Future Together</h2>
+            <p className="text-lg mb-8 text-primary-foreground/90">
               We're seeking strategic investors who share our vision for continuously learning AI systems.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
-                variant="secondary" 
                 size="lg"
-                className="group"
+                className="group bg-secondary text-secondary-foreground hover:bg-secondary/90"
               >
                 Request Investor Deck
                 <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
               </Button>
               <Button 
-                variant="outline" 
                 size="lg"
-                className="bg-white text-primary hover:bg-white/90"
+                className="bg-background text-foreground hover:bg-background/90"
               >
                 Schedule a Call
               </Button>

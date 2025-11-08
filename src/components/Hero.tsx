@@ -3,6 +3,7 @@ import { ArrowRight, Sparkles } from "lucide-react";
 import heroImage from "@/assets/hero-ai.jpg";
 import { motion } from "framer-motion";
 import { fadeInUp, fadeIn, staggerContainer } from "@/lib/motion";
+import { Link } from "react-router-dom";
 
 export const Hero = () => {
   return (
@@ -42,7 +43,7 @@ export const Hero = () => {
           {/* Main heading */}
           <motion.h1 className="text-foreground" variants={fadeInUp(0.1)}>
             AI That{" "}
-            <span className="gradient-text-colorful">Learns</span>
+            <span className="text-primary">Learns</span>
             {" "}Continuously
           </motion.h1>
 
@@ -59,13 +60,17 @@ export const Hero = () => {
             className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
             variants={fadeInUp(0.3)}
           >
-            <Button variant="hero" size="lg" className="group gradient-bg">
-              For Investors
-              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-            </Button>
-            <Button variant="outline" size="lg">
-              Learn More
-            </Button>
+            <Link to="/investors">
+              <Button size="lg" className="group bg-primary text-primary-foreground hover:bg-primary/90">
+                For Investors
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </Button>
+            </Link>
+            <Link to="/technology">
+              <Button size="lg" className="bg-secondary text-secondary-foreground hover:bg-secondary/90">
+                Learn More
+              </Button>
+            </Link>
           </motion.div>
 
           {/* Key metric */}
@@ -84,7 +89,7 @@ export const Hero = () => {
             </div>
             <div className="hidden sm:block w-px h-12 bg-border" />
             <div>
-              <div className="text-4xl font-bold text-accent">Zero</div>
+              <div className="text-4xl font-bold text-primary">Zero</div>
               <div className="text-sm text-muted-foreground">External Dependencies</div>
             </div>
           </motion.div>

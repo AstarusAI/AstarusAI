@@ -13,26 +13,13 @@ export default function Team() {
       <section className="relative pt-32 pb-20 px-4">
         <div className="container">
           <div className="max-w-4xl mx-auto text-center space-y-6 animate-fade-in">
-            <h1 className="gradient-text-colorful">Meet Our Team</h1>
+            <h1 className="text-primary">Meet Our Team</h1>
             <p className="text-xl text-muted-foreground">
               A passionate group of AI researchers and engineers pushing the boundaries of machine learning
             </p>
           </div>
         </div>
       </section>
-
-      {/* Team Photo */}
-      {/* <section className="py-12 px-4">
-        <div className="container">
-          <div className="max-w-5xl mx-auto">
-            <img 
-              src={teamPhoto} 
-              alt="Astarus Team" 
-              className="w-full rounded-lg shadow-2xl border border-border"
-            />
-          </div>
-        </div>
-      </section> */}
 
       {/* Team Members */}
       <section className="py-20 px-4">
@@ -41,8 +28,12 @@ export default function Team() {
             {/* Founder/CEO */}
             <Card className="p-6 card-hover border-2 border-primary/20">
               <div className="space-y-4">
-                <div className="w-20 h-20 rounded-full gradient-bg flex items-center justify-center text-4xl font-bold text-white mx-auto">
-                  R
+                <div className="w-32 h-32 rounded-full overflow-hidden mx-auto border-4 border-primary">
+                  <img 
+                    src="/CEO Pic.jpeg" 
+                    alt="Rafayel - Founder & CEO" 
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <div className="text-center">
                   <h3 className="text-xl font-bold text-foreground">Rafayel</h3>
@@ -65,7 +56,7 @@ export default function Team() {
             {/* CTO */}
             <Card className="p-6 card-hover border-2 border-secondary/20">
               <div className="space-y-4">
-                <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center text-4xl font-bold text-white mx-auto">
+                <div className="w-32 h-32 rounded-full bg-secondary flex items-center justify-center text-4xl font-bold text-white mx-auto">
                   A
                 </div>
                 <div className="text-center">
@@ -100,7 +91,7 @@ export default function Team() {
             </p>
             <a 
               href="/contact" 
-              className="inline-block px-8 py-3 gradient-bg text-white rounded-lg font-semibold hover:opacity-90 transition-opacity"
+              className="inline-block px-8 py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-colors"
             >
               View Open Positions
             </a>

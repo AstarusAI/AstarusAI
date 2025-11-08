@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { ArrowRight, Mail } from "lucide-react";
 import { motion } from "framer-motion";
 import { fadeIn, fadeInUp, scaleOnHover } from "@/lib/motion";
+import { Link } from "react-router-dom";
 
 export const CTA = () => {
   return (
@@ -28,14 +29,18 @@ export const CTA = () => {
               </p>
 
               <motion.div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4" variants={fadeInUp(0.2)}>
-                <Button variant="hero" size="lg" className="group">
-                  <Mail className="w-5 h-5" />
-                  Contact for Investment
-                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                </Button>
-                <Button variant="outline" size="lg">
-                  Request Technical Brief
-                </Button>
+                <Link to="/contact">
+                  <Button size="lg" className="group bg-primary text-primary-foreground hover:bg-primary/90">
+                    <Mail className="w-5 h-5" />
+                    Contact for Investment
+                    <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                  </Button>
+                </Link>
+                <Link to="/technology">
+                  <Button size="lg" className="bg-secondary text-secondary-foreground hover:bg-secondary/90">
+                    Request Technical Brief
+                  </Button>
+                </Link>
               </motion.div>
 
               <motion.div className="pt-8 border-t border-border" variants={fadeInUp(0.3)}>

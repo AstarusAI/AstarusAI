@@ -17,16 +17,16 @@ All colors MUST be HSL.
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    --primary: 262 83% 58%;
+    --primary: 262 80% 60%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 340 82% 52%;
+    --secondary: 25 95% 53%;
     --secondary-foreground: 0 0% 100%;
 
     --muted: 210 40% 96%;
     --muted-foreground: 215 16% 47%;
 
-    --accent: 31 97% 55%;
+    --accent: 262 80% 60%;
     --accent-foreground: 0 0% 100%;
 
     --success: 142 76% 36%;
@@ -106,14 +106,11 @@ All colors MUST be HSL.
     @apply transition-all duration-300 hover:scale-[1.02] hover:shadow-lg;
   }
 
-  .gradient-bg {
-    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--accent)) 100%);
+  .text-primary-gradient {
+    @apply text-primary;
   }
 
-  .gradient-text-colorful {
-    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)), hsl(var(--accent)));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+  .text-colorful {
+    @apply text-primary;
   }
 }

@@ -12,7 +12,7 @@ export const Navbar = () => {
         <div className="rounded-b-3xl bg-background/85 backdrop-blur-lg border border-border/70 border-t-0 shadow-sm px-6">
           <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="text-2xl font-bold gradient-text-colorful">
+          <Link to="/" className="text-2xl font-bold text-primary">
             Astarus
           </Link>
 
@@ -38,7 +38,7 @@ export const Navbar = () => {
           {/* CTA Button */}
           <div className="hidden md:block">
             <Link to="/contact">
-              <Button className="gradient-bg">Get in Touch</Button>
+              <Button className="bg-primary text-primary-foreground hover:bg-primary/90">Get in Touch</Button>
             </Link>
           </div>
 
@@ -90,7 +90,7 @@ export const Navbar = () => {
               Contact
             </Link>
             <Link to="/contact" onClick={() => setIsOpen(false)}>
-              <Button className="w-full gradient-bg">Get in Touch</Button>
+              <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90">Get in Touch</Button>
             </Link>
           </div>
           )}

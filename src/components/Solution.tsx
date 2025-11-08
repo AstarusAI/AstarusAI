@@ -91,39 +91,39 @@ export const Solution = () => {
           >
             <Card className="p-8 bg-card border relative overflow-hidden">
               <div className="relative space-y-6">
-                <h3 className="text-2xl font-bold text-foreground">How It Works</h3>
+                <h3 className="text-2xl font-bold text-primary">How It Works</h3>
 
                 <motion.div className="space-y-4" variants={staggerContainer(0.15, 0.1)}>
-                  <motion.div className="p-4 rounded-lg bg-secondary border" variants={fadeInUp(0.05)}>
+                  <motion.div className="p-4 rounded-lg bg-primary/5 border-2 border-primary/20" variants={fadeInUp(0.05)}>
                     <div className="text-sm font-semibold text-primary mb-2">Step 1: Inference</div>
-                    <p className="text-sm text-muted-foreground">Model generates transformations in some of the transformer blocks</p>
+                    <p className="text-sm text-foreground">Model generates transformations in some of the transformer blocks</p>
                   </motion.div>
 
                   <div className="flex justify-center">
-                    <div className="w-px h-8 bg-primary/30" />
+                    <div className="w-px h-8 bg-primary/50" />
                   </div>
 
-                  <motion.div className="p-4 rounded-lg bg-secondary border" variants={fadeInUp(0.1)}>
-                    <div className="text-sm font-semibold text-primary mb-2">Step 2: Lookup</div>
-                    <p className="text-sm text-muted-foreground">LUT matches activations to stored correction patterns</p>
+                  <motion.div className="p-4 rounded-lg bg-secondary/5 border-2 border-secondary/20" variants={fadeInUp(0.1)}>
+                    <div className="text-sm font-semibold text-secondary mb-2">Step 2: Lookup</div>
+                    <p className="text-sm text-foreground">LUT matches activations to stored correction patterns</p>
                   </motion.div>
 
                   <div className="flex justify-center">
-                    <div className="w-px h-8 bg-primary/30" />
+                    <div className="w-px h-8 bg-secondary/50" />
                   </div>
 
-                  <motion.div className="p-4 rounded-lg bg-secondary border" variants={fadeInUp(0.15)}>
+                  <motion.div className="p-4 rounded-lg bg-primary/5 border-2 border-primary/20" variants={fadeInUp(0.15)}>
                     <div className="text-sm font-semibold text-primary mb-2">Step 3: Correction</div>
-                    <p className="text-sm text-muted-foreground">Corrective logits are added to output, steering predictions</p>
+                    <p className="text-sm text-foreground">Corrective logits are added to output, steering predictions</p>
                   </motion.div>
 
                   <div className="flex justify-center">
-                    <div className="w-px h-8 bg-primary/30" />
+                    <div className="w-px h-8 bg-primary/50" />
                   </div>
 
-                  <motion.div className="p-4 rounded-lg bg-primary/10 border border-primary" variants={fadeInUp(0.2)}>
-                    <div className="text-sm font-semibold text-primary mb-2">Result</div>
-                    <p className="text-sm text-foreground font-medium">Personalized, adapted output in real-time</p>
+                  <motion.div className="p-4 rounded-lg bg-secondary/10 border-2 border-secondary" variants={fadeInUp(0.2)}>
+                    <div className="text-sm font-semibold text-secondary mb-2">Result</div>
+                    <p className="text-sm text-foreground font-semibold">Personalized, adapted output in real-time</p>
                   </motion.div>
                 </motion.div>
               </div>

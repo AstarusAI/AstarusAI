@@ -10,7 +10,7 @@ export const Footer = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
             {/* Company info */}
             <div className="space-y-4">
-              <h3 className="text-xl font-bold gradient-text-colorful">Astarus</h3>
+              <h3 className="text-xl font-bold text-primary">Astarus</h3>
               <p className="text-sm text-muted-foreground">
                 Building the next generation of continuously learning AI systems.
               </p>

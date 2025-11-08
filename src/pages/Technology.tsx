@@ -96,7 +96,7 @@ export default function Technology() {
             className="max-w-4xl mx-auto text-center space-y-6"
             variants={fadeInUp(0.1)}
           >
-            <h1 className="gradient-text-colorful">The Technology Behind Astarus</h1>
+            <h1 className="text-primary">The Technology Behind Astarus</h1>
             <p className="text-xl text-muted-foreground">
               A revolutionary approach to continuous learning in large language models
             </p>

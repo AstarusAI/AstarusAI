@@ -82,13 +82,13 @@ export default function Technology() {
         viewport={{ once: true, amount: 0.2 }}
         variants={fadeIn()}
       >
-        <div className="absolute inset-0">
+        <div className="absolute inset-0 bg-primary/5" />
+        <div className="absolute inset-0 opacity-10">
           <img 
             src={technologyBg} 
             alt="Technology Background" 
-            className="w-full h-full object-cover opacity-70"
+            className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/10 via-background/40 to-background/80" />
         </div>
         
         <div className="container relative z-10">
@@ -106,7 +106,7 @@ export default function Technology() {
 
       {/* Architecture Section */}
       <motion.section
-        className="py-20 px-4"
+        className="py-20 px-4 bg-secondary/5"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
@@ -159,7 +159,7 @@ export default function Technology() {
 
       {/* Performance Metrics */}
       <motion.section
-        className="py-20 px-4 bg-muted/30"
+        className="py-20 px-4 bg-primary/5"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
@@ -198,7 +198,7 @@ export default function Technology() {
 
       {/* Technical Details */}
       <motion.section
-        className="py-20 px-4"
+        className="py-20 px-4 bg-secondary/5"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}

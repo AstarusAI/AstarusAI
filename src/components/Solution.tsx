@@ -26,7 +26,7 @@ const features = [
 export const Solution = () => {
   return (
     <motion.section
-      className="py-24 px-4 relative"
+      className="py-24 px-4 relative bg-secondary/5"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.2 }}

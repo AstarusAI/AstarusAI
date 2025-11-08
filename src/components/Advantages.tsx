@@ -60,7 +60,7 @@ const advantages = [
 export const Advantages = () => {
   return (
     <motion.section
-      className="py-24 px-4 bg-muted/30"
+      className="py-24 px-4 bg-primary/5"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.2 }}

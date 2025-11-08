@@ -13,14 +13,14 @@ export const Hero = () => {
       animate="visible"
       variants={fadeIn()}
     >
-      {/* Hero background image */}
-      <div className="absolute inset-0 overflow-hidden">
+      {/* Hero background with color */}
+      <div className="absolute inset-0 bg-primary/5" />
+      <div className="absolute inset-0 overflow-hidden opacity-20">
         <img
           src={heroImage}
           alt="AI Neural Network"
-          className="w-full h-full object-cover opacity-70"
+          className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/10 via-background/40 to-background/80" />
       </div>
 
       <div className="container relative z-10">

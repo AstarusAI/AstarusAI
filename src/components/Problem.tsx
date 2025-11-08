@@ -52,7 +52,7 @@ const problems = [
 export const Problem = () => {
   return (
     <motion.section
-      className="py-24 px-4"
+      className="py-24 px-4 bg-secondary/5"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.2 }}

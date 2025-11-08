@@ -8,7 +8,7 @@ import { Link } from "react-router-dom";
 export const CTA = () => {
   return (
     <motion.section
-      className="py-24 px-4 relative overflow-hidden"
+      className="py-24 px-4 relative overflow-hidden bg-primary/5"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.2 }}

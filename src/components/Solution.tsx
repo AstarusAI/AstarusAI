@@ -96,7 +96,7 @@ export const Solution = () => {
                 <motion.div className="space-y-4" variants={staggerContainer(0.15, 0.1)}>
                   <motion.div className="p-4 rounded-lg bg-primary/5 border-2 border-primary/20" variants={fadeInUp(0.05)}>
                     <div className="text-sm font-semibold text-primary mb-2">Step 1: Inference</div>
-                    <p className="text-sm text-foreground">Model generates transformations in some of the transformer blocks</p>
+                    <p className="text-sm text-foreground">Model gets feedback</p>
                   </motion.div>
 
                   <div className="flex justify-center">
@@ -105,7 +105,7 @@ export const Solution = () => {
 
                   <motion.div className="p-4 rounded-lg bg-secondary/5 border-2 border-secondary/20" variants={fadeInUp(0.1)}>
                     <div className="text-sm font-semibold text-secondary mb-2">Step 2: Lookup</div>
-                    <p className="text-sm text-foreground">LUT matches activations to stored correction patterns</p>
+                    <p className="text-sm text-foreground">The Lookup Table (LUT) updates using calculated embedding transformations.</p>
                   </motion.div>
 
                   <div className="flex justify-center">
@@ -114,7 +114,7 @@ export const Solution = () => {
 
                   <motion.div className="p-4 rounded-lg bg-primary/5 border-2 border-primary/20" variants={fadeInUp(0.15)}>
                     <div className="text-sm font-semibold text-primary mb-2">Step 3: Correction</div>
-                    <p className="text-sm text-foreground">Corrective logits are added to output, steering predictions</p>
+                    <p className="text-sm text-foreground">These updates adjust the logits, steering future predictions.</p>
                   </motion.div>
 
                   <div className="flex justify-center">

@@ -210,12 +210,12 @@ export default function Technology() {
               How It Works
             </motion.h2>
             
-            <motion.div className="space-y-8" variants={staggerContainer(0.15, 0.2)}>
+            <motion.div className="space-y-0.5" variants={staggerContainer(0.15, 0.2)}>
               {workflowSteps.map(({ title, colorClass, borderClass, description }, index) => (
                 <motion.div key={title} variants={fadeInUp(index * 0.05)}>
-                  <Card className={`p-8 border-l-4 ${borderClass}`}>
-                    <h3 className={`text-2xl font-bold mb-4 ${colorClass}`}>{title}</h3>
-                    <p className="text-muted-foreground">{description}</p>
+                  <Card className={`p-4 border-l-4 ${borderClass}`}>
+                    <h3 className={`text-xl font-bold mb-2 ${colorClass}`}>{title}</h3>
+                    <p className="text-muted-foreground text-sm">{description}</p>
                   </Card>
                 </motion.div>
               ))}

@@ -18,20 +18,14 @@ import { fadeIn, fadeInUp, staggerContainer } from "@/lib/motion";
 const BASE_URL = "https://fhd5rgv0o0dd8i-8000.proxy.runpod.net";
 const MODEL = "mistral";
 
-const DEFAULT_THRESHOLD = 0.25;
-
-// All WNN blocks the user can choose from
+// Match the Python script defaults
+const DEFAULT_THRESHOLD = 0.20;
 const AVAILABLE_WNN_BLOCKS = [-1, -4] as const;
-
-// Initial enabled WNN blocks
 const DEFAULT_WNN_BLOCKS = [-1, -4];
-
-// Default residual per block
 const DEFAULT_RESIDUAL_MAP: Record<string, number> = {
   "-1": 0.75,
   "-4": 0.25,
 };
-
 const GEN_LENGTH = 128;
 
 type Message = {
@@ -128,27 +122,25 @@ function generateLutName() {
 
 /**
  * Clean up raw assistant text:
- * - Remove "Assistant:" prefixes (including mid-text line starts)
+ * - Remove "Assistant:" prefixes
  * - Chop off any trailing "User: ..." segments
  * - Remove junk like ".:" and everything after that
- * - Fix small newline/punctuation artefacts
  */
 function cleanAnswer(raw: string): string {
   let text = raw;
 
-  // Remove any leading "Assistant:" at the very start
+  // Remove leading "Assistant:"
   text = text.replace(/^Assistant:\s*/i, "");
-
   // Remove "Assistant:" when it appears at the start of a new line
   text = text.replace(/\nAssistant:\s*/gi, "\n");
 
-  // If the model hallucinated another "User:" later, drop everything after it
+  // Drop everything after a later "User:"
   const userIdx = text.indexOf("\nUser:");
   if (userIdx !== -1) {
     text = text.slice(0, userIdx);
   }
 
-  // Handle the ugly ".:" artefact, keep everything up to the period
+  // Handle ".:" artefact, keep everything up to the period
   const dotColonIdx = text.indexOf(".:");
   if (dotColonIdx !== -1) {
     text = text.slice(0, dotColonIdx + 1);
@@ -163,6 +155,9 @@ function cleanAnswer(raw: string): string {
   return text.trim();
 }
 
+/**
+ * Mirror the Python extract_assistant_answer(user_msg, completion)
+ */
 function extractAssistantAnswer(userMsg: string, completion: string): string {
   const patternUser = `User: ${userMsg}`;
   let text: string;
@@ -171,7 +166,6 @@ function extractAssistantAnswer(userMsg: string, completion: string): string {
   if (idxUser !== -1) {
     text = completion.slice(idxUser + patternUser.length);
   } else {
-    // If backend doesn't echo the user exactly, just work on the whole completion
     text = completion;
   }
 
@@ -180,7 +174,6 @@ function extractAssistantAnswer(userMsg: string, completion: string): string {
     text = text.slice(idxAssistant + "Assistant:".length);
   }
 
-  // Everything after the next "User:" is another turn – we don't want that
   const nextUser = text.indexOf("User:");
   if (nextUser !== -1) {
     text = text.slice(0, nextUser);
@@ -190,7 +183,6 @@ function extractAssistantAnswer(userMsg: string, completion: string): string {
   if (!answer) {
     return cleanAnswer(completion.trim());
   }
-
   return cleanAnswer(answer);
 }
 
@@ -241,16 +233,19 @@ async function generateFromApi(
   wnnBlocks: number[],
   residuals: number[]
 ): Promise<GenerateResponse> {
+  const prompt = `User: ${userMsg}\nAssistant:`; // same as CLI
+
   const payload = {
-    prompt: `User: ${userMsg}\nAssistant:`,
+    prompt,
     length: GEN_LENGTH,
     lut_name: lutName,
     model: MODEL,
     threshold,
+    residuals, // plural, as in your Python script
     wnn_blocks: wnnBlocks,
-    residual: residuals,
   };
-  console.log("Using WNN blocks", wnnBlocks, "with residuals", residuals);
+
+  console.log("POST /generate payload:", payload);
 
   const res = await fetch(`${BASE_URL}/generate`, {
     method: "POST",
@@ -276,10 +271,7 @@ export default function LutDemo() {
   const [input, setInput] = useState("");
   const [threshold, setThreshold] = useState(DEFAULT_THRESHOLD);
 
-  // Which WNN blocks are enabled for this LUT
   const [wnnBlocks, setWnnBlocks] = useState<number[]>(DEFAULT_WNN_BLOCKS);
-
-  // Residual per block id (string key for simplicity)
   const [residualMap, setResidualMap] = useState<Record<string, number>>(
     DEFAULT_RESIDUAL_MAP
   );
@@ -295,7 +287,7 @@ export default function LutDemo() {
 
   const hasMessages = useMemo(() => messages.length > 0, [messages.length]);
 
-  // Derive residual array in the same order as wnnBlocks
+  // Residual array aligned with wnnBlocks
   const currentResiduals = useMemo(
     () => wnnBlocks.map((b) => residualMap[String(b)] ?? 1.0),
     [wnnBlocks, residualMap]
@@ -348,7 +340,6 @@ export default function LutDemo() {
     setStatus(`Switched to new LUT: ${newName}`);
     setLastResidualUsed(undefined);
     setLastThresholdUsed(undefined);
-    // Reset to defaults for a fresh LUT
     setWnnBlocks(DEFAULT_WNN_BLOCKS);
     setResidualMap(DEFAULT_RESIDUAL_MAP);
   };
@@ -620,7 +611,9 @@ export default function LutDemo() {
                     {AVAILABLE_WNN_BLOCKS.map((block) => {
                       const enabled = wnnBlocks.includes(block);
                       const residual =
-                        residualMap[String(block)] ?? DEFAULT_RESIDUAL_MAP[String(block)] ?? 1.0;
+                        residualMap[String(block)] ??
+                        DEFAULT_RESIDUAL_MAP[String(block)] ??
+                        1.0;
 
                       return (
                         <div
@@ -680,7 +673,7 @@ export default function LutDemo() {
                 <p className="text-xs text-muted-foreground">
                   Imprint a specific Q&amp;A. The model will treat it as a
                   strong memory via the LUT (using your currently enabled WNN
-                  blocks and residuals).
+                  blocks).
                 </p>
 
                 <Button
@@ -740,7 +733,7 @@ export default function LutDemo() {
                 <p className="text-xs text-muted-foreground">
                   Load a small curated knowledge base about Astarus AI into the
                   LUT. Then ask the model questions about Astarus AI. Training
-                  uses your currently enabled WNN blocks &amp; residuals.
+                  uses your currently enabled WNN blocks.
                 </p>
                 <Button
                   size="sm"

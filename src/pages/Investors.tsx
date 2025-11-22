@@ -51,13 +51,13 @@ export default function Investors() {
         viewport={{ once: true, amount: 0.2 }}
         variants={fadeIn()}
       >
-        <div className="absolute inset-0">
+        <div className="absolute inset-0 bg-secondary/5" />
+        <div className="absolute inset-0 opacity-10">
           <img 
             src={investorsBg} 
             alt="Investors Background" 
-            className="w-full h-full object-cover opacity-70"
+            className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/10 via-background/40 to-background/80" />
         </div>
         
         <div className="container relative z-10">
@@ -65,7 +65,7 @@ export default function Investors() {
             className="max-w-4xl mx-auto text-center space-y-6"
             variants={fadeInUp(0.1)}
           >
-            <h1 className="gradient-text-colorful">Investment Opportunity</h1>
+            <h1 className="text-primary">Investment Opportunity</h1>
             <p className="text-xl text-muted-foreground">
               Join us in revolutionizing AI with continuously learning models
             </p>
@@ -75,7 +75,7 @@ export default function Investors() {
 
       {/* Value Proposition */}
       <motion.section
-        className="py-20 px-4"
+        className="py-20 px-4 bg-primary/5"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
@@ -106,7 +106,7 @@ export default function Investors() {
       </motion.section>
 
       {/* The Opportunity */}
-      <section className="py-20 px-4 bg-muted/30">
+      <section className="py-20 px-4 bg-secondary/5">
         <div className="container">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-foreground mb-12 text-center">Why Invest in Astarus?</h2>
@@ -193,26 +193,24 @@ export default function Investors() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-4">
+      <section className="py-20 px-4 bg-primary/5">
         <div className="container">
-          <Card className="max-w-4xl mx-auto p-12 text-center gradient-bg text-white">
-            <h2 className="text-white mb-6">Let's Build the Future Together</h2>
-            <p className="text-lg mb-8 text-white/90">
+          <Card className="max-w-4xl mx-auto p-12 text-center bg-card border-2 border-primary">
+            <h2 className="text-primary mb-6">Let's Build the Future Together</h2>
+            <p className="text-lg mb-8 text-muted-foreground">
               We're seeking strategic investors who share our vision for continuously learning AI systems.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
-                variant="secondary" 
                 size="lg"
-                className="group"
+                className="group bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 Request Investor Deck
                 <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
               </Button>
               <Button 
-                variant="outline" 
                 size="lg"
-                className="bg-white text-primary hover:bg-white/90"
+                className="bg-secondary text-secondary-foreground hover:bg-secondary/90"
               >
                 Schedule a Call
               </Button>

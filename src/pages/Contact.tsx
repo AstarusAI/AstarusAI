@@ -15,7 +15,7 @@ export default function Contact() {
       <section className="pt-32 pb-20 px-4">
         <div className="container">
           <div className="max-w-4xl mx-auto text-center space-y-6 animate-fade-in">
-            <h1 className="gradient-text-colorful">Get in Touch</h1>
+            <h1 className="text-primary">Get in Touch</h1>
             <p className="text-xl text-muted-foreground">
               Whether you're an investor, potential partner, or just curious about our technology, we'd love to hear from you.
             </p>
@@ -116,7 +116,7 @@ export default function Contact() {
                   />
                 </div>
 
-                <Button type="submit" className="w-full gradient-bg" size="lg">
+                <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90" size="lg">
                   Send Message
                 </Button>
               </form>

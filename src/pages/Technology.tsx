@@ -82,13 +82,13 @@ export default function Technology() {
         viewport={{ once: true, amount: 0.2 }}
         variants={fadeIn()}
       >
-        <div className="absolute inset-0">
+        <div className="absolute inset-0 bg-primary/5" />
+        <div className="absolute inset-0 opacity-10">
           <img 
             src={technologyBg} 
             alt="Technology Background" 
-            className="w-full h-full object-cover opacity-70"
+            className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/10 via-background/40 to-background/80" />
         </div>
         
         <div className="container relative z-10">
@@ -96,7 +96,7 @@ export default function Technology() {
             className="max-w-4xl mx-auto text-center space-y-6"
             variants={fadeInUp(0.1)}
           >
-            <h1 className="gradient-text-colorful">The Technology Behind Astarus</h1>
+            <h1 className="text-primary">The Technology Behind Astarus</h1>
             <p className="text-xl text-muted-foreground">
               A revolutionary approach to continuous learning in large language models
             </p>
@@ -106,7 +106,7 @@ export default function Technology() {
 
       {/* Architecture Section */}
       <motion.section
-        className="py-20 px-4"
+        className="py-20 px-4 bg-secondary/5"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
@@ -126,8 +126,8 @@ export default function Technology() {
                 <motion.div className="flex gap-3" variants={fadeInUp(0.05)}>
                   <CheckCircle2 className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
                   <div>
-                    <h4 className="font-semibold text-foreground mb-1">No Backpropagation Required</h4>
-                    <p className="text-muted-foreground">Updates happen through simple table lookups, not expensive gradient descent</p>
+                    <h4 className="font-semibold text-foreground mb-1">Lightweight Gradient Updates</h4>
+                    <p className="text-muted-foreground">Gradients are computed only for the LUT, not the full model, allowing fast, low-cost adaptation without retraining.</p>
                   </div>
                 </motion.div>
                 <motion.div className="flex gap-3" variants={fadeInUp(0.1)}>
@@ -159,7 +159,7 @@ export default function Technology() {
 
       {/* Performance Metrics */}
       <motion.section
-        className="py-20 px-4 bg-muted/30"
+        className="py-20 px-4 bg-primary/5"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
@@ -198,7 +198,7 @@ export default function Technology() {
 
       {/* Technical Details */}
       <motion.section
-        className="py-20 px-4"
+        className="py-20 px-4 bg-secondary/5"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
@@ -210,12 +210,12 @@ export default function Technology() {
               How It Works
             </motion.h2>
             
-            <motion.div className="space-y-8" variants={staggerContainer(0.15, 0.2)}>
+            <motion.div className="space-y-0.5" variants={staggerContainer(0.15, 0.2)}>
               {workflowSteps.map(({ title, colorClass, borderClass, description }, index) => (
                 <motion.div key={title} variants={fadeInUp(index * 0.05)}>
-                  <Card className={`p-8 border-l-4 ${borderClass}`}>
-                    <h3 className={`text-2xl font-bold mb-4 ${colorClass}`}>{title}</h3>
-                    <p className="text-muted-foreground">{description}</p>
+                  <Card className={`p-4 border-l-4 ${borderClass}`}>
+                    <h3 className={`text-xl font-bold mb-2 ${colorClass}`}>{title}</h3>
+                    <p className="text-muted-foreground text-sm">{description}</p>
                   </Card>
                 </motion.div>
               ))}

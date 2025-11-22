@@ -1,6 +1,6 @@
-import { Variants, Transition } from "framer-motion";
+import { Variants } from "framer-motion";
 
-const ease: Transition["ease"] = [0.22, 1, 0.36, 1];
+const ease = [0.22, 1, 0.36, 1] as const;
 
 export const fadeInUp = (delay = 0, distance = 40): Variants => ({
   hidden: { opacity: 0, y: distance },

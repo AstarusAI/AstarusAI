@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
-import heroImage from "@/assets/hero-ai.jpg";
 import { motion } from "framer-motion";
 import { fadeInUp, fadeIn, staggerContainer } from "@/lib/motion";
+import { Link } from "react-router-dom";
 
 export const Hero = () => {
   return (
@@ -15,11 +15,10 @@ export const Hero = () => {
       {/* Hero background image */}
       <div className="absolute inset-0 overflow-hidden">
         <img
-          src={heroImage}
-          alt="AI Neural Network"
-          className="w-full h-full object-cover opacity-70"
+          src="/AIBackground1.webp"
+          alt="AI Background"
+          className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/10 via-background/40 to-background/80" />
       </div>
 
       <div className="container relative z-10">
@@ -32,23 +31,23 @@ export const Hero = () => {
         >
           {/* Badge */}
           <motion.div
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-card backdrop-blur-sm border border-primary/30"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/95 backdrop-blur-md border border-primary/40 shadow-lg"
             variants={fadeInUp(0)}
           >
             <Sparkles className="w-4 h-4 text-primary" />
-            <span className="text-sm text-muted-foreground">Next-Generation AI Architecture</span>
+            <span className="text-sm font-semibold text-gray-800">Next-Generation AI Architecture</span>
           </motion.div>
 
           {/* Main heading */}
-          <motion.h1 className="text-foreground" variants={fadeInUp(0.1)}>
+          <motion.h1 className="text-white font-bold drop-shadow-2xl [text-shadow:_0_4px_20px_rgba(0,0,0,0.8)]" variants={fadeInUp(0.1)}>
             AI That{" "}
-            <span className="gradient-text-colorful">Learns</span>
+            <span className="text-primary drop-shadow-lg [text-shadow:_0_2px_10px_rgba(59,130,246,0.6)]">Learns</span>
             {" "}Continuously
           </motion.h1>
 
           {/* Subheading */}
           <motion.p
-            className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed"
+            className="text-xl md:text-2xl text-white/95 max-w-3xl mx-auto leading-relaxed font-medium drop-shadow-xl [text-shadow:_0_2px_12px_rgba(0,0,0,0.7)]"
             variants={fadeInUp(0.2)}
           >
             Introducing memory-augmented transformers: the breakthrough that enables real-time learning and adaptation without expensive fine-tuning or complex infrastructure.
@@ -59,13 +58,26 @@ export const Hero = () => {
             className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
             variants={fadeInUp(0.3)}
           >
-            <Button variant="hero" size="lg" className="group gradient-bg">
-              For Investors
-              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-            </Button>
-            <Button variant="outline" size="lg">
-              Learn More
-            </Button>
+            <Link to="/investors">
+              <Button 
+                size="default" 
+                className="group relative bg-gradient-to-r from-primary to-primary/80 text-white font-semibold px-6 py-3 rounded-lg shadow-xl hover:shadow-primary/50 hover:scale-105 transition-all duration-300 border-2 border-white/20 backdrop-blur-sm"
+              >
+                <span className="relative z-10 flex items-center gap-2">
+                  For Investors
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                </span>
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/80 to-primary rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              </Button>
+            </Link>
+            <Link to="/technology">
+              <Button 
+                size="default" 
+                className="group relative bg-white/10 backdrop-blur-md text-white font-semibold px-6 py-3 rounded-lg shadow-xl hover:bg-white/20 hover:scale-105 transition-all duration-300 border-2 border-white/30 hover:border-white/50"
+              >
+                <span className="relative z-10">Learn More</span>
+              </Button>
+            </Link>
           </motion.div>
 
           {/* Key metric */}
@@ -74,18 +86,18 @@ export const Hero = () => {
             variants={fadeInUp(0.4)}
           >
             <div>
-              <div className="text-4xl font-bold text-primary">Up to 75%</div>
-              <div className="text-sm text-muted-foreground">Perplexity Reduction</div>
+              <div className="text-4xl font-bold text-primary drop-shadow-lg [text-shadow:_0_2px_8px_rgba(59,130,246,0.5)]">Up to 75%</div>
+              <div className="text-sm text-white/90 font-medium drop-shadow-md [text-shadow:_0_1px_4px_rgba(0,0,0,0.6)]">Perplexity Reduction</div>
             </div>
-            <div className="hidden sm:block w-px h-12 bg-border" />
+            <div className="hidden sm:block w-px h-12 bg-white/40" />
             <div>
-              <div className="text-4xl font-bold text-secondary">Seconds</div>
-              <div className="text-sm text-muted-foreground">To Train</div>
+              <div className="text-4xl font-bold text-secondary drop-shadow-lg [text-shadow:_0_2px_8px_rgba(168,85,247,0.5)]">Seconds</div>
+              <div className="text-sm text-white/90 font-medium drop-shadow-md [text-shadow:_0_1px_4px_rgba(0,0,0,0.6)]">To Train</div>
             </div>
-            <div className="hidden sm:block w-px h-12 bg-border" />
+            <div className="hidden sm:block w-px h-12 bg-white/40" />
             <div>
-              <div className="text-4xl font-bold text-accent">Zero</div>
-              <div className="text-sm text-muted-foreground">External Dependencies</div>
+              <div className="text-4xl font-bold text-primary drop-shadow-lg [text-shadow:_0_2px_8px_rgba(59,130,246,0.5)]">Zero</div>
+              <div className="text-sm text-white/90 font-medium drop-shadow-md [text-shadow:_0_1px_4px_rgba(0,0,0,0.6)]">External Dependencies</div>
             </div>
           </motion.div>
         </motion.div>

@@ -33,7 +33,7 @@ const useCases = [
 export const UseCases = () => {
   return (
     <motion.section
-      className="py-24 px-4"
+      className="py-24 px-4 bg-gradient-to-b from-white via-gray-50/50 to-white"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.2 }}
@@ -44,8 +44,11 @@ export const UseCases = () => {
           className="max-w-3xl mx-auto text-center mb-16 space-y-4"
           variants={fadeInUp(0.1)}
         >
-          <h2 className="text-foreground">Transformative Applications</h2>
-          <p className="text-xl text-muted-foreground">
+          <div className="inline-block px-4 py-2 rounded-full bg-secondary/5 border-2 border-secondary/20 mb-4">
+            <span className="text-sm font-semibold text-secondary">Real-World Impact</span>
+          </div>
+          <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">Transformative Applications</h2>
+          <p className="text-xl text-gray-700 font-medium leading-relaxed">
             Enable use cases that were previously impossible or economically unfeasible.
           </p>
         </motion.div>
@@ -65,61 +68,50 @@ export const UseCases = () => {
                 transition={scaleOnHover.transition}
               >
                 <Card
-                  className="p-6 bg-card border-2 card-hover group"
-                  style={{
-                    borderColor:
-                      index === 0
-                        ? "hsl(var(--primary))"
-                        : index === 1
-                        ? "hsl(var(--secondary))"
-                        : index === 2
-                        ? "hsl(var(--accent))"
-                        : "hsl(var(--success))",
-                  }}
+                  className={`p-8 border-2 card-hover group relative overflow-hidden ${
+                    index % 2 === 0 ? 'bg-primary/5 border-primary/20' : 'bg-secondary/5 border-secondary/20'
+                  }`}
                 >
-                  <div className="space-y-6">
+                  <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${
+                    index % 2 === 0 ? 'from-primary/20' : 'from-secondary/20'
+                  } to-transparent rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
+                  <div className="relative space-y-6">
                     <div className="flex items-start gap-4">
                       <motion.div
-                        className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0"
-                        style={{
-                          backgroundColor:
-                            index === 0
-                              ? "hsl(var(--primary) / 0.1)"
-                              : index === 1
-                              ? "hsl(var(--secondary) / 0.1)"
-                              : index === 2
-                              ? "hsl(var(--accent) / 0.1)"
-                              : "hsl(var(--success) / 0.1)",
-                        }}
-                        whileHover={{ scale: 1.1 }}
+                        className={`w-16 h-16 rounded-xl flex items-center justify-center flex-shrink-0 border-2 shadow-lg ${
+                          index % 2 === 0 
+                            ? 'bg-primary/5 border-primary/20' 
+                            : 'bg-secondary/5 border-secondary/20'
+                        }`}
+                        whileHover={{ scale: 1.1, rotate: 5 }}
                         transition={{ duration: 0.3 }}
                       >
                         <Icon
-                          className="w-7 h-7"
-                          style={{
-                            color:
-                              index === 0
-                                ? "hsl(var(--primary))"
-                                : index === 1
-                                ? "hsl(var(--secondary))"
-                                : index === 2
-                                ? "hsl(var(--accent))"
-                                : "hsl(var(--success))",
-                          }}
+                          className={`w-8 h-8 ${
+                            index % 2 === 0 ? 'text-primary' : 'text-secondary'
+                          }`}
                         />
                       </motion.div>
-                      <div>
-                        <h3 className="text-2xl font-bold text-foreground mb-2">{useCase.title}</h3>
+                      <div className="flex-1">
+                        <h3 className={`text-2xl font-bold text-gray-900 mb-2 group-hover:${
+                          index % 2 === 0 ? 'text-primary' : 'text-secondary'
+                        } transition-colors`}>{useCase.title}</h3>
                       </div>
                     </div>
-                    <p className="text-muted-foreground leading-relaxed">{useCase.description}</p>
+                    <p className="text-gray-700 leading-relaxed font-medium">{useCase.description}</p>
                     <div className="pt-2">
-                      <div className="text-sm font-semibold text-primary mb-3">Key Applications:</div>
+                      <div className={`text-sm font-bold mb-3 ${
+                        index % 2 === 0 ? 'text-primary' : 'text-secondary'
+                      }`}>Key Applications:</div>
                       <div className="flex flex-wrap gap-2">
                         {useCase.examples.map((example, idx) => (
                           <motion.span
                             key={idx}
-                            className="px-3 py-1 rounded-full bg-primary/10 text-sm text-foreground border border-primary/20"
+                            className={`px-3 py-1.5 rounded-full text-sm font-medium border-2 ${
+                              index % 2 === 0
+                                ? 'bg-primary/5 border-primary/20 text-primary'
+                                : 'bg-secondary/5 border-secondary/20 text-secondary'
+                            }`}
                             whileHover={{ scale: 1.05 }}
                             transition={{ duration: 0.2 }}
                           >

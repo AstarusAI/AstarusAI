@@ -33,6 +33,9 @@ export const Navbar = () => {
             <Link to="/contact" className="text-foreground hover:text-primary transition-colors">
               Contact
             </Link>
+            <Link to="/chat" className="text-foreground hover:text-primary transition-colors">
+              Try it
+            </Link>
           </div>
 
           {/* CTA Button */}

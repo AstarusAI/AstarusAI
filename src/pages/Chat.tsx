@@ -361,7 +361,7 @@ export default function LutDemo() {
             className="max-w-4xl mx-auto text-center space-y-6"
             variants={fadeInUp(0.1)}
           >
-            <h1 className="gradient-text-colorful">
+            <h1 className="text-primary">
               LUT-LLM Interactive Demo
             </h1>
             <p className="text-xl text-muted-foreground">
@@ -432,9 +432,9 @@ export default function LutDemo() {
                     <div className="text-sm text-muted-foreground">
                       <p className="mb-2">Try asking things like:</p>
                       <ul className="list-disc list-inside space-y-1">
-                        <li>“What does NovaStack Labs do?”</li>
-                        <li>“Where does NovaStack Labs focus?”</li>
-                        <li>“Explain NovaStack Labs's AtlasEdge.”</li>
+                        <li>“What does Astarus AI do?”</li>
+                        <li>“Where does Astarus AI focus on?”</li>
+                        <li>“Explain Astarus AI's LUT-LLMs.”</li>
                       </ul>
                       <p className="mt-3">
                         You can also teach the model your own Q&amp;A pairs
@@ -703,8 +703,8 @@ export default function LutDemo() {
       <section className="py-16 px-4 bg-muted/30">
         <div className="container">
           <Card className="max-w-4xl mx-auto p-10 text-center gradient-bg text-white">
-            <h2 className="text-white mb-4">LUTs inside real LLMs</h2>
-            <p className="text-sm sm:text-base mb-6 text-white/90">
+            <h2 className="text-black mb-4">LUTs inside real LLMs</h2>
+            <p className="text-sm sm:text-base mb-6 text-black/90">
               This demo shows a single-user LUT on top of a 7B-class model.
               Imagine per-user LUTs for thousands of users, all updating in real
               time without retraining the base model.

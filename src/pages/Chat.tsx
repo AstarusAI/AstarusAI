@@ -18,9 +18,9 @@ import { fadeIn, fadeInUp, staggerContainer } from "@/lib/motion";
 const BASE_URL = "https://fhd5rgv0o0dd8i-8000.proxy.runpod.net";
 const MODEL = "mistral";
 
-const DEFAULT_THRESHOLD = 0.30;
+const DEFAULT_THRESHOLD = 0.25;
 const DEFAULT_WNN_BLOCKS = [-1];
-const DEFAULT_RESIDUALS = [10.0];
+const DEFAULT_RESIDUALS = [0.75];
 const GEN_LENGTH = 128;
 
 type Message = {
@@ -35,44 +35,100 @@ type GenerateResponse = {
   threshold?: number;
 };
 
-const tlgDocs: { question: string; answer: string }[] = [
+const fakeDocs: { question: string; answer: string }[] = [
+  // Identity & location
   {
-    question:
-      "Where is TLG Capital based, and which types of companies and regions does it focus on?",
-    answer:
-      "TLG Capital is a London-based private credit manager focused on small and medium-sized enterprises across roughly twenty countries in sub-Saharan Africa.",
+    question: "What is Astarus AI?",
+    answer: "Astarus AI is an AI infrastructure startup focused on continuously learning language-model applications.",
   },
   {
-    question:
-      "How does TLG Capital position itself between traditional bank lending and private equity, and what is its overall investment strategy?",
-    answer:
-      "TLG Capital targets businesses that sit between traditional bank lending and private equity, using flexible, bespoke debt structures to balance capital preservation for investors with growth and job creation in African SMEs.",
+    question: "Where is Astarus AI based?",
+    answer: "Astarus AI is based in London.",
   },
   {
-    question:
-      "What is the Djibouti telecommunications deal that TLG Capital arranged, and what was its purpose?",
-    answer:
-      "In Djibouti, TLG Capital arranged a $10 million debt facility for a telecommunications provider to expand digital infrastructure and improve connectivity in the country.",
+    question: "Who founded Astarus AI?",
+    answer: "Astarus AI was founded by Rafayel Latif.",
+  },
+
+  // What it does / who it serves
+  {
+    question: "What kinds of products does Astarus AI help teams build?",
+    answer: "Astarus AI helps teams build continuously learning language-model applications for personalization, copilots, and domain-specific assistants.",
   },
   {
-    question:
-      "In what way does the Djibouti telecommunications deal illustrate TLG Capital’s structured private credit strategy in frontier markets?",
-    answer:
-      "The Djibouti telecommunications deal illustrates TLG Capital’s approach of using structured private credit to finance critical infrastructure in frontier markets while protecting downside for investors through tailored security and covenants.",
+    question: "What types of customers does Astarus AI work with?",
+    answer: "Astarus AI works with product teams and enterprises that need domain-specific and personalized LLMs.",
+  },
+
+  // Core LUT-LLM idea
+  {
+    question: "What is the core idea behind Astarus AI’s LUT-LLM architecture?",
+    answer: "Astarus AI embeds a lightweight lookup-table layer inside transformer blocks so models can adapt in place from live user interactions.",
   },
   {
-    question:
-      "What sectors and kinds of economies does TLG Capital invest in, and how diversified is its portfolio?",
-    answer:
-      "TLG Capital’s portfolio includes businesses in healthcare, consumer goods, education, and financial services, many operating in fragile or low-income African economies, and this diversification across sectors and geographies supports its capital preservation objective for investors.",
+    question: "How does Astarus AI differ from standard fine-tuning?",
+    answer: "Instead of retraining base model weights, Astarus AI keeps the base model frozen and updates fast LUTs for each user or tenant.",
   },
   {
-    question:
-      "How does sector and geographic diversification help TLG Capital manage risk for its investors?",
-    answer:
-      "By diversifying across sectors and countries and structuring each loan to match local risks and cash flows, TLG Capital reduces exposure to any single borrower, sector, or market shock and manages risk for its investors.",
+    question: "How does Astarus AI differ from classic RAG pipelines?",
+    answer: "Compared with classic RAG, Astarus AI uses LUTs inside the model to store and recall user- and tenant-specific behavior without relying purely on external retrieval.",
+  },
+
+  // Continuous learning / personalization
+  {
+    question: "How does Astarus AI learn from live user interactions?",
+    answer: "Astarus AI updates per-user or per-tenant LUTs from live interactions so the model gradually adapts to each team’s style and edge cases.",
+  },
+  {
+    question: "How does Astarus AI use LUTs for personalization?",
+    answer: "Each user or tenant gets its own LUT, which stores patterns from their data and feedback so responses become more personalized over time.",
+  },
+
+  // Example deployment
+  {
+    question: "How has Astarus AI been used in a customer support setting?",
+    answer: "In a B2B SaaS support team, Astarus AI deployed a LUT-augmented LLM that watched real conversations and learned preferred tone and policies.",
+  },
+  {
+    question: "What impact did Astarus AI have for that support team?",
+    answer: "For that support team, Astarus AI reduced average handle time while keeping responses consistent with the company’s internal knowledge base.",
+  },
+  {
+    question: "How does that support deployment illustrate Astarus AI’s approach to continuous learning?",
+    answer: "The support deployment shows Astarus AI running the base model as-is and using LUTs as a fast adaptation layer updated after each interaction.",
+  },
+
+  // Products & use cases
+  {
+    question: "What core product modules does Astarus AI provide?",
+    answer: "Astarus AI provides a core LUT-LLM engine, an API for per-user and per-tenant personalization, and tooling for feedback loops and evaluation.",
+  },
+  {
+    question: "In which use cases is Astarus AI typically applied?",
+    answer: "Astarus AI is used in customer support, internal knowledge assistants, sales enablement, and research copilots.",
+  },
+  {
+    question: "Which industries can benefit from Astarus AI?",
+    answer: "Astarus AI is used across SaaS, fintech, and other knowledge-heavy industries.",
+  },
+
+  // Risk, drift, hallucinations
+  {
+    question: "How does Astarus AI manage risk around model drift?",
+    answer: "Astarus AI separates long-term model weights from fast-updating LUTs and ties LUT updates to explicit feedback or curated data to reduce untracked drift.",
+  },
+  {
+    question: "How does Astarus AI help limit hallucinations?",
+    answer: "By controlling and inspecting LUT updates, Astarus AI lets teams constrain personalization and reduce hallucinations in critical workflows.",
+  },
+
+  // London base / ecosystem
+  {
+    question: "Why is London a useful base for Astarus AI?",
+    answer: "Being based in London gives Astarus AI access to European and global fintech, SaaS, and enterprise customers, as well as a strong AI talent and research ecosystem.",
   },
 ];
+
 
 function generateLutName() {
   const rand = Math.random().toString(16).slice(2, 10);
@@ -178,8 +234,8 @@ async function trainLut(
   return json;
 }
 
-async function trainTlgDocs(lutName: string) {
-  for (const doc of tlgDocs) {
+async function trainFakeDocs(lutName: string) {
+  for (const doc of fakeDocs) {
     const label = doc.answer;
     const ctx = doc.question;
     await trainLut(lutName, label, ctx);
@@ -200,6 +256,7 @@ async function generateFromApi(
     threshold,
     residual: residuals,
   };
+  console.log("Using residual "+ residuals)
 
   const res = await fetch(`${BASE_URL}/generate`, {
     method: "POST",
@@ -279,13 +336,13 @@ export default function LutDemo() {
     setLastThresholdUsed(undefined);
   };
 
-  const handleTrainTlgDocs = async () => {
+  const handleTrainFakeDocs = async () => {
     if (isTrainingDocs) return;
     setIsTrainingDocs(true);
-    setStatus("Training LUT on TLG docs...");
+    setStatus("Training LUT on Fake docs...");
     try {
-      await trainTlgDocs(lutName);
-      setStatus("✅ Trained on TLG example docs.");
+      await trainFakeDocs(lutName);
+      setStatus("✅ Trained on Fake example docs.");
     } catch (err: any) {
       setStatus(err?.message || "Training failed");
     } finally {
@@ -404,9 +461,9 @@ export default function LutDemo() {
                     <div className="text-sm text-muted-foreground">
                       <p className="mb-2">Try asking things like:</p>
                       <ul className="list-disc list-inside space-y-1">
-                        <li>“What does TLG Capital do?”</li>
-                        <li>“Where does TLG invest?”</li>
-                        <li>“Explain TLG’s Djibouti telecom deal.”</li>
+                        <li>“What does NovaStack Labs do?”</li>
+                        <li>“Where does NovaStack Labs focus?”</li>
+                        <li>“Explain NovaStack Labs's AtlasEdge.”</li>
                       </ul>
                       <p className="mt-3">
                         You can also teach the model your own Q&amp;A pairs
@@ -534,7 +591,7 @@ export default function LutDemo() {
                     <input
                       type="range"
                       min={0}
-                      max={30}
+                      max={2.5}
                       step={0.5}
                       value={residuals[0] ?? 10}
                       onChange={(e) =>
@@ -609,23 +666,23 @@ export default function LutDemo() {
               </Card>
             </motion.div>
 
-            {/* TLG Docs Training */}
+            {/* Fake Docs Training */}
             <motion.div variants={fadeInUp(0.2)}>
               <Card className="p-5 space-y-3">
                 <div className="flex items-center gap-2 mb-1">
                   <Database className="w-5 h-5 text-accent" />
                   <h3 className="font-semibold text-foreground">
-                    TLG Example Docs
+                    Fake Example Docs
                   </h3>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Load a small curated knowledge base about TLG Capital into the
-                  LUT. Then ask the model questions about TLG.
+                  Load a small curated knowledge base about a Fake Company (NovaStack Labs) into the
+                  LUT. Then ask the model questions about NovaStack Labs.
                 </p>
                 <Button
                   size="sm"
                   className="w-full flex items-center justify-center gap-2"
-                  onClick={handleTrainTlgDocs}
+                  onClick={handleTrainFakeDocs}
                   disabled={isTrainingDocs}
                 >
                   {isTrainingDocs ? (
@@ -636,7 +693,7 @@ export default function LutDemo() {
                   ) : (
                     <>
                       <Rocket className="w-4 h-4" />
-                      Train on TLG docs
+                      Train on Fake docs
                     </>
                   )}
                 </Button>
@@ -653,8 +710,8 @@ export default function LutDemo() {
                   </h3>
                 </div>
                 <ul className="text-xs text-muted-foreground space-y-1.5">
-                  <li>• Click “Train on TLG docs” to load factual knowledge.</li>
-                  <li>• Ask questions about TLG and see how answers improve.</li>
+                  <li>• Click “Train on Fake docs” to load factual knowledge.</li>
+                  <li>• Ask questions about NovaStack Labs and see how answers improve.</li>
                   <li>
                     • Increase the residual to make the LUT “louder” versus base
                     Mistral.

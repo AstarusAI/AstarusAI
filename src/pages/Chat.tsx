@@ -84,20 +84,6 @@ const fakeDocs: { question: string; answer: string }[] = [
     answer: "Each user or tenant gets its own LUT, which stores patterns from their data and feedback so responses become more personalized over time.",
   },
 
-  // Example deployment
-  {
-    question: "How has Astarus AI been used in a customer support setting?",
-    answer: "In a B2B SaaS support team, Astarus AI deployed a LUT-augmented LLM that watched real conversations and learned preferred tone and policies.",
-  },
-  {
-    question: "What impact did Astarus AI have for that support team?",
-    answer: "For that support team, Astarus AI reduced average handle time while keeping responses consistent with the company’s internal knowledge base.",
-  },
-  {
-    question: "How does that support deployment illustrate Astarus AI’s approach to continuous learning?",
-    answer: "The support deployment shows Astarus AI running the base model as-is and using LUTs as a fast adaptation layer updated after each interaction.",
-  },
-
   // Products & use cases
   {
     question: "What core product modules does Astarus AI provide?",
@@ -112,21 +98,6 @@ const fakeDocs: { question: string; answer: string }[] = [
     answer: "Astarus AI is used across SaaS, fintech, and other knowledge-heavy industries.",
   },
 
-  // Risk, drift, hallucinations
-  {
-    question: "How does Astarus AI manage risk around model drift?",
-    answer: "Astarus AI separates long-term model weights from fast-updating LUTs and ties LUT updates to explicit feedback or curated data to reduce untracked drift.",
-  },
-  {
-    question: "How does Astarus AI help limit hallucinations?",
-    answer: "By controlling and inspecting LUT updates, Astarus AI lets teams constrain personalization and reduce hallucinations in critical workflows.",
-  },
-
-  // London base / ecosystem
-  {
-    question: "Why is London a useful base for Astarus AI?",
-    answer: "Being based in London gives Astarus AI access to European and global fintech, SaaS, and enterprise customers, as well as a strong AI talent and research ecosystem.",
-  },
 ];
 
 
@@ -342,7 +313,7 @@ export default function LutDemo() {
     setStatus("Training LUT on Fake docs...");
     try {
       await trainFakeDocs(lutName);
-      setStatus("✅ Trained on Fake example docs.");
+      setStatus("✅ Trained on Astarus AI internal Example docs.");
     } catch (err: any) {
       setStatus(err?.message || "Training failed");
     } finally {
@@ -592,7 +563,7 @@ export default function LutDemo() {
                       type="range"
                       min={0}
                       max={2.5}
-                      step={0.5}
+                      step={0.1}
                       value={residuals[0] ?? 10}
                       onChange={(e) =>
                         setResiduals([parseFloat(e.target.value || "10")])
@@ -672,12 +643,12 @@ export default function LutDemo() {
                 <div className="flex items-center gap-2 mb-1">
                   <Database className="w-5 h-5 text-accent" />
                   <h3 className="font-semibold text-foreground">
-                    Fake Example Docs
+                    Astarus AI Internal Example Docs
                   </h3>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Load a small curated knowledge base about a Fake Company (NovaStack Labs) into the
-                  LUT. Then ask the model questions about NovaStack Labs.
+                  Load a small curated knowledge base about a Astarus AI into the
+                  LUT. Then ask the model questions about Astarus AI.
                 </p>
                 <Button
                   size="sm"
@@ -693,7 +664,7 @@ export default function LutDemo() {
                   ) : (
                     <>
                       <Rocket className="w-4 h-4" />
-                      Train on Fake docs
+                      Train on Astarus AI Internal Example docs.
                     </>
                   )}
                 </Button>
@@ -710,7 +681,7 @@ export default function LutDemo() {
                   </h3>
                 </div>
                 <ul className="text-xs text-muted-foreground space-y-1.5">
-                  <li>• Click “Train on Fake docs” to load factual knowledge.</li>
+                  <li>• Click “Train on Astarus AI Internal Example docs” to load factual knowledge.</li>
                   <li>• Ask questions about NovaStack Labs and see how answers improve.</li>
                   <li>
                     • Increase the residual to make the LUT “louder” versus base

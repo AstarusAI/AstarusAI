@@ -19,8 +19,19 @@ const BASE_URL = "https://fhd5rgv0o0dd8i-8000.proxy.runpod.net";
 const MODEL = "mistral";
 
 const DEFAULT_THRESHOLD = 0.25;
-const DEFAULT_WNN_BLOCKS = [-1];
-const DEFAULT_RESIDUALS = [0.75];
+
+// All WNN blocks the user can choose from
+const AVAILABLE_WNN_BLOCKS = [-1, -4] as const;
+
+// Initial enabled WNN blocks
+const DEFAULT_WNN_BLOCKS = [-1, -4];
+
+// Default residual per block
+const DEFAULT_RESIDUAL_MAP: Record<string, number> = {
+  "-1": 0.75,
+  "-4": 0.25,
+};
+
 const GEN_LENGTH = 128;
 
 type Message = {
@@ -39,7 +50,8 @@ const fakeDocs: { question: string; answer: string }[] = [
   // Identity & location
   {
     question: "What is Astarus AI?",
-    answer: "Astarus AI is an AI infrastructure startup focused on continuously learning language-model applications.",
+    answer:
+      "Astarus AI is an AI infrastructure startup focused on continuously learning language-model applications.",
   },
   {
     question: "Where is Astarus AI based?",
@@ -53,53 +65,61 @@ const fakeDocs: { question: string; answer: string }[] = [
   // What it does / who it serves
   {
     question: "What kinds of products does Astarus AI help teams build?",
-    answer: "Astarus AI helps teams build continuously learning language-model applications for personalization, copilots, and domain-specific assistants.",
+    answer:
+      "Astarus AI helps teams build continuously learning language-model applications for personalization, copilots, and domain-specific assistants.",
   },
   {
     question: "What types of customers does Astarus AI work with?",
-    answer: "Astarus AI works with product teams and enterprises that need domain-specific and personalized LLMs.",
+    answer:
+      "Astarus AI works with product teams and enterprises that need domain-specific and personalized LLMs.",
   },
 
   // Core LUT-LLM idea
   {
     question: "What is the core idea behind Astarus AI’s LUT-LLM architecture?",
-    answer: "Astarus AI embeds a lightweight lookup-table layer inside transformer blocks so models can adapt in place from live user interactions.",
+    answer:
+      "Astarus AI embeds a lightweight lookup-table layer inside transformer blocks so models can adapt in place from live user interactions.",
   },
   {
     question: "How does Astarus AI differ from standard fine-tuning?",
-    answer: "Instead of retraining base model weights, Astarus AI keeps the base model frozen and updates fast LUTs for each user or tenant.",
+    answer:
+      "Instead of retraining base model weights, Astarus AI keeps the base model frozen and updates fast LUTs for each user or tenant.",
   },
   {
     question: "How does Astarus AI differ from classic RAG pipelines?",
-    answer: "Compared with classic RAG, Astarus AI uses LUTs inside the model to store and recall user- and tenant-specific behavior without relying purely on external retrieval.",
+    answer:
+      "Compared with classic RAG, Astarus AI uses LUTs inside the model to store and recall user- and tenant-specific behavior without relying purely on external retrieval.",
   },
 
   // Continuous learning / personalization
   {
     question: "How does Astarus AI learn from live user interactions?",
-    answer: "Astarus AI updates per-user or per-tenant LUTs from live interactions so the model gradually adapts to each team’s style and edge cases.",
+    answer:
+      "Astarus AI updates per-user or per-tenant LUTs from live interactions so the model gradually adapts to each team’s style and edge cases.",
   },
   {
     question: "How does Astarus AI use LUTs for personalization?",
-    answer: "Each user or tenant gets its own LUT, which stores patterns from their data and feedback so responses become more personalized over time.",
+    answer:
+      "Each user or tenant gets its own LUT, which stores patterns from their data and feedback so responses become more personalized over time.",
   },
 
   // Products & use cases
   {
     question: "What core product modules does Astarus AI provide?",
-    answer: "Astarus AI provides a core LUT-LLM engine, an API for per-user and per-tenant personalization, and tooling for feedback loops and evaluation.",
+    answer:
+      "Astarus AI provides a core LUT-LLM engine, an API for per-user and per-tenant personalization, and tooling for feedback loops and evaluation.",
   },
   {
     question: "In which use cases is Astarus AI typically applied?",
-    answer: "Astarus AI is used in customer support, internal knowledge assistants, sales enablement, and research copilots.",
+    answer:
+      "Astarus AI is used in customer support, internal knowledge assistants, sales enablement, and research copilots.",
   },
   {
     question: "Which industries can benefit from Astarus AI?",
-    answer: "Astarus AI is used across SaaS, fintech, and other knowledge-heavy industries.",
+    answer:
+      "Astarus AI is used across SaaS, fintech, and other knowledge-heavy industries.",
   },
-
 ];
-
 
 function generateLutName() {
   const rand = Math.random().toString(16).slice(2, 10);
@@ -177,14 +197,15 @@ function extractAssistantAnswer(userMsg: string, completion: string): string {
 async function trainLut(
   lutName: string,
   label: string,
-  labelContext?: string
+  labelContext: string | null,
+  wnnBlocks: number[]
 ) {
   const payload = {
     label,
-    label_context: labelContext ?? null,
+    label_context: labelContext,
     lut_name: lutName,
     model: MODEL,
-    wnn_blocks: DEFAULT_WNN_BLOCKS,
+    wnn_blocks: wnnBlocks,
     sparsity: 1.0,
   };
 
@@ -205,11 +226,11 @@ async function trainLut(
   return json;
 }
 
-async function trainFakeDocs(lutName: string) {
+async function trainFakeDocs(lutName: string, wnnBlocks: number[]) {
   for (const doc of fakeDocs) {
     const label = doc.answer;
     const ctx = doc.question;
-    await trainLut(lutName, label, ctx);
+    await trainLut(lutName, label, ctx, wnnBlocks);
   }
 }
 
@@ -217,6 +238,7 @@ async function generateFromApi(
   lutName: string,
   userMsg: string,
   threshold: number,
+  wnnBlocks: number[],
   residuals: number[]
 ): Promise<GenerateResponse> {
   const payload = {
@@ -225,9 +247,10 @@ async function generateFromApi(
     lut_name: lutName,
     model: MODEL,
     threshold,
+    wnn_blocks: wnnBlocks,
     residual: residuals,
   };
-  console.log("Using residual "+ residuals)
+  console.log("Using WNN blocks", wnnBlocks, "with residuals", residuals);
 
   const res = await fetch(`${BASE_URL}/generate`, {
     method: "POST",
@@ -252,7 +275,15 @@ export default function LutDemo() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [threshold, setThreshold] = useState(DEFAULT_THRESHOLD);
-  const [residuals, setResiduals] = useState<number[]>(DEFAULT_RESIDUALS);
+
+  // Which WNN blocks are enabled for this LUT
+  const [wnnBlocks, setWnnBlocks] = useState<number[]>(DEFAULT_WNN_BLOCKS);
+
+  // Residual per block id (string key for simplicity)
+  const [residualMap, setResidualMap] = useState<Record<string, number>>(
+    DEFAULT_RESIDUAL_MAP
+  );
+
   const [isGenerating, setIsGenerating] = useState(false);
   const [isTrainingDocs, setIsTrainingDocs] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
@@ -263,6 +294,12 @@ export default function LutDemo() {
   const [lastThresholdUsed, setLastThresholdUsed] = useState<number>();
 
   const hasMessages = useMemo(() => messages.length > 0, [messages.length]);
+
+  // Derive residual array in the same order as wnnBlocks
+  const currentResiduals = useMemo(
+    () => wnnBlocks.map((b) => residualMap[String(b)] ?? 1.0),
+    [wnnBlocks, residualMap]
+  );
 
   const handleSend = async () => {
     const trimmed = input.trim();
@@ -280,9 +317,15 @@ export default function LutDemo() {
     setIsGenerating(true);
 
     try {
-      const resp = await generateFromApi(lutName, trimmed, threshold, residuals);
-      setLastResidualUsed(resp.residual);
-      setLastThresholdUsed(resp.threshold);
+      const resp = await generateFromApi(
+        lutName,
+        trimmed,
+        threshold,
+        wnnBlocks,
+        currentResiduals
+      );
+      setLastResidualUsed(resp.residual ?? currentResiduals);
+      setLastThresholdUsed(resp.threshold ?? threshold);
 
       const assistantText = extractAssistantAnswer(trimmed, resp.completion);
       const assistantMsg: Message = {
@@ -305,15 +348,18 @@ export default function LutDemo() {
     setStatus(`Switched to new LUT: ${newName}`);
     setLastResidualUsed(undefined);
     setLastThresholdUsed(undefined);
+    // Reset to defaults for a fresh LUT
+    setWnnBlocks(DEFAULT_WNN_BLOCKS);
+    setResidualMap(DEFAULT_RESIDUAL_MAP);
   };
 
-  const handleTrainFakeDocs = async () => {
+  const handleTrainFakeDocsClick = async () => {
     if (isTrainingDocs) return;
     setIsTrainingDocs(true);
-    setStatus("Training LUT on Fake docs...");
+    setStatus("Training LUT on Astarus AI example docs...");
     try {
-      await trainFakeDocs(lutName);
-      setStatus("✅ Trained on Astarus AI internal Example docs.");
+      await trainFakeDocs(lutName, wnnBlocks);
+      setStatus("✅ Trained on Astarus AI internal example docs.");
     } catch (err: any) {
       setStatus(err?.message || "Training failed");
     } finally {
@@ -332,7 +378,7 @@ export default function LutDemo() {
     const label = `User: ${q}\nAssistant: ${a}`;
     setStatus("Teaching custom Q&A to LUT...");
     try {
-      await trainLut(lutName, label);
+      await trainLut(lutName, label, null, wnnBlocks);
       setStatus("✅ Stored this Q&A in the LUT. Future answers should reflect it.");
       setTeachQuestion("");
       setTeachAnswer("");
@@ -340,6 +386,19 @@ export default function LutDemo() {
     } catch (err: any) {
       setStatus(err?.message || "Teaching failed");
     }
+  };
+
+  const toggleBlock = (block: number) => {
+    setWnnBlocks((prev) =>
+      prev.includes(block) ? prev.filter((b) => b !== block) : [...prev, block]
+    );
+  };
+
+  const handleResidualChange = (block: number, value: number) => {
+    setResidualMap((prev) => ({
+      ...prev,
+      [String(block)]: value,
+    }));
   };
 
   return (
@@ -361,9 +420,7 @@ export default function LutDemo() {
             className="max-w-4xl mx-auto text-center space-y-6"
             variants={fadeInUp(0.1)}
           >
-            <h1 className="text-primary">
-              LUT-LLM Interactive Demo
-            </h1>
+            <h1 className="text-primary">LUT-LLM Interactive Demo</h1>
             <p className="text-xl text-muted-foreground">
               Play with a lookup-table augmented Mistral model. Teach it facts,
               tune its memory, and see how residuals &amp; thresholds change its
@@ -434,7 +491,7 @@ export default function LutDemo() {
                       <ul className="list-disc list-inside space-y-1">
                         <li>“What does Astarus AI do?”</li>
                         <li>“Where does Astarus AI focus on?”</li>
-                        <li>“Explain Astarus AI's LUT-LLMs.”</li>
+                        <li>“Explain Astarus AI&apos;s LUT-LLMs.”</li>
                       </ul>
                       <p className="mt-3">
                         You can also teach the model your own Q&amp;A pairs
@@ -528,6 +585,7 @@ export default function LutDemo() {
                     <RefreshCw className="w-4 h-4" />
                   </Button>
                 </div>
+
                 <div className="space-y-4 text-sm">
                   <div>
                     <div className="flex justify-between mb-1">
@@ -552,27 +610,59 @@ export default function LutDemo() {
                     </p>
                   </div>
 
-                  <div>
+                  <div className="space-y-2">
                     <div className="flex justify-between mb-1">
-                      <span className="text-muted-foreground">Residual</span>
-                      <span className="font-mono text-xs">
-                        {residuals[0]?.toFixed(1) ?? "—"}
+                      <span className="text-muted-foreground">
+                        WNN Blocks &amp; Residuals
                       </span>
                     </div>
-                    <input
-                      type="range"
-                      min={0}
-                      max={2.5}
-                      step={0.1}
-                      value={residuals[0] ?? 10}
-                      onChange={(e) =>
-                        setResiduals([parseFloat(e.target.value || "10")])
-                      }
-                      className="w-full"
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      How loud the LUT is once it’s in.
-                    </p>
+
+                    {AVAILABLE_WNN_BLOCKS.map((block) => {
+                      const enabled = wnnBlocks.includes(block);
+                      const residual =
+                        residualMap[String(block)] ?? DEFAULT_RESIDUAL_MAP[String(block)] ?? 1.0;
+
+                      return (
+                        <div
+                          key={block}
+                          className="border rounded-lg px-3 py-2 space-y-1"
+                        >
+                          <div className="flex items-center justify-between">
+                            <label className="flex items-center gap-2 text-xs">
+                              <input
+                                type="checkbox"
+                                checked={enabled}
+                                onChange={() => toggleBlock(block)}
+                              />
+                              <span className="text-muted-foreground">
+                                Block {block}
+                              </span>
+                            </label>
+                            <span className="font-mono text-xs">
+                              {residual.toFixed(2)}
+                            </span>
+                          </div>
+                          <input
+                            type="range"
+                            min={0}
+                            max={2.5}
+                            step={0.1}
+                            value={residual}
+                            onChange={(e) =>
+                              handleResidualChange(
+                                block,
+                                parseFloat(e.target.value || "0")
+                              )
+                            }
+                            disabled={!enabled}
+                            className="w-full"
+                          />
+                          <p className="text-[10px] text-muted-foreground">
+                            How loud the LUT for block {block} is once it’s in.
+                          </p>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </Card>
@@ -589,7 +679,8 @@ export default function LutDemo() {
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Imprint a specific Q&amp;A. The model will treat it as a
-                  strong memory via the LUT.
+                  strong memory via the LUT (using your currently enabled WNN
+                  blocks and residuals).
                 </p>
 
                 <Button
@@ -647,13 +738,14 @@ export default function LutDemo() {
                   </h3>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Load a small curated knowledge base about a Astarus AI into the
-                  LUT. Then ask the model questions about Astarus AI.
+                  Load a small curated knowledge base about Astarus AI into the
+                  LUT. Then ask the model questions about Astarus AI. Training
+                  uses your currently enabled WNN blocks &amp; residuals.
                 </p>
                 <Button
                   size="sm"
                   className="w-full flex items-center justify-center gap-2"
-                  onClick={handleTrainFakeDocs}
+                  onClick={handleTrainFakeDocsClick}
                   disabled={isTrainingDocs}
                 >
                   {isTrainingDocs ? (
@@ -681,17 +773,22 @@ export default function LutDemo() {
                   </h3>
                 </div>
                 <ul className="text-xs text-muted-foreground space-y-1.5">
-                  <li>• Click “Train on Astarus AI Internal Example docs” to load factual knowledge.</li>
-                  <li>• Ask questions about NovaStack Labs and see how answers improve.</li>
                   <li>
-                    • Increase the residual to make the LUT “louder” versus base
-                    Mistral.
+                    • Click “Train on Astarus AI Internal Example docs” to load
+                    factual knowledge (with your chosen WNN blocks).
+                  </li>
+                  <li>• Ask questions about Astarus AI and see how answers improve.</li>
+                  <li>
+                    • Increase the residual for a block to make that LUT “louder”
+                    versus base Mistral.
                   </li>
                   <li>
                     • Lower the threshold to make the LUT fire more often; raise
                     it to rely more on the base model.
                   </li>
-                  <li>• Use “Store Q&amp;A in LUT” for your own custom memories.</li>
+                  <li>
+                    • Use “Store Q&amp;A in LUT” for your own custom memories.
+                  </li>
                 </ul>
               </Card>
             </motion.div>
@@ -710,11 +807,7 @@ export default function LutDemo() {
               time without retraining the base model.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button
-                variant="secondary"
-                size="sm"
-                className="group"
-              >
+              <Button variant="secondary" size="sm" className="group">
                 View API Docs
                 <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
               </Button>

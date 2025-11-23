@@ -577,7 +577,7 @@ export default function LutDemo() {
                       <ul className="list-disc list-inside space-y-1">
                         <li>“What does Astarus AI do?”</li>
                         <li>“Who founded Astarus AI?”</li>
-                        <li>“Explain Astarus AI&apos;s LUT-LLMs.”</li>
+                        <li>“Explain Astarus AI in 3-4 sentences.”</li>
                       </ul>
                       <p className="mt-3">
                         Or create/load another LUT on the right to train your

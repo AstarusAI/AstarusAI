@@ -44,12 +44,12 @@ type PretrainedLutConfig = {
 const PRETRAINED_LUTS: PretrainedLutConfig[] = [
   {
     label: "Astarus AI demo",
-    lutName: "demo-9f45f811",
+    lutName: "demo-9eb289ff",
     blocks: [-1, -4, -9],
     residualMap: {
       "-1": 0.25,
-      "-4": 0.2,
-      "-9": 0.15,
+      "-4": 0.15,
+      "-9": 0.08,
     },
     readOnly: true,
   },
@@ -69,7 +69,7 @@ const DEFAULT_NEW_LUT_RESIDUALS: Record<string, number> = {
 };
 
 // Match the Python script defaults
-const DEFAULT_THRESHOLD = 0.35;
+const DEFAULT_THRESHOLD = 0.15;
 const GEN_LENGTH = 128;
 
 const fakeDocs: { question: string; answer: string }[] = [
@@ -803,7 +803,7 @@ export default function LutDemo() {
                             type="range"
                             min={0}
                             max={2.5}
-                            step={0.1}
+                            step={0.025}
                             value={residual}
                             onChange={(e) =>
                               handleResidualChange(

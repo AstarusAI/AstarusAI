@@ -11,6 +11,7 @@ import {
   Sparkles,
   ArrowRight,
   RefreshCw,
+  X,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { fadeIn, fadeInUp, staggerContainer } from "@/lib/motion";
@@ -18,16 +19,7 @@ import { fadeIn, fadeInUp, staggerContainer } from "@/lib/motion";
 const BASE_URL = "https://fhd5rgv0o0dd8i-8000.proxy.runpod.net";
 const MODEL = "mistral";
 
-// Match the Python script defaults
-const DEFAULT_THRESHOLD = 0.20;
-const AVAILABLE_WNN_BLOCKS = [-1, -4] as const;
-const DEFAULT_WNN_BLOCKS = [-1, -4];
-const DEFAULT_RESIDUAL_MAP: Record<string, number> = {
-  "-1": 0.75,
-  "-4": 0.25,
-};
-const GEN_LENGTH = 128;
-
+// Types
 type Message = {
   id: string;
   role: "user" | "assistant";
@@ -40,78 +32,70 @@ type GenerateResponse = {
   threshold?: number;
 };
 
+type PretrainedLutConfig = {
+  label: string;
+  lutName: string;
+  blocks: number[];
+  residualMap: Record<string, number>;
+  readOnly?: boolean;
+};
+
+// Pre-trained LUT demos (dropdown)
+const PRETRAINED_LUTS: PretrainedLutConfig[] = [
+  {
+    label: "Astarus AI demo",
+    lutName: "demo-9f45f811",
+    blocks: [-1, -4, -9],
+    residualMap: {
+      "-1": 0.25,
+      "-4": 0.2,
+      "-9": 0.15,
+    },
+    readOnly: true,
+  },
+  // Add more pre-trained configs here later if you want
+];
+
+// Any pre-trained marked readOnly is treated as protected
+const READ_ONLY_LUTS = PRETRAINED_LUTS.filter((p) => p.readOnly).map(
+  (p) => p.lutName
+);
+
+// Defaults for *new* (non-pretrained) LUTs
+const DEFAULT_NEW_LUT_BLOCKS = [-1, -4];
+const DEFAULT_NEW_LUT_RESIDUALS: Record<string, number> = {
+  "-1": 0.75,
+  "-4": 0.25,
+};
+
+// Match the Python script defaults
+const DEFAULT_THRESHOLD = 0.35;
+const GEN_LENGTH = 128;
+
 const fakeDocs: { question: string; answer: string }[] = [
-  // Identity & location
   {
     question: "What is Astarus AI?",
     answer:
-      "Astarus AI is an AI infrastructure startup focused on continuously learning language-model applications.",
+      "Astarus AI is an AI infrastructure startup that builds continuously learning language-model systems for personalization and domain-specific assistants.",
   },
   {
-    question: "Where is Astarus AI based?",
-    answer: "Astarus AI is based in London.",
+    question: "Who founded Astarus AI and where is it based?",
+    answer: "Astarus AI was founded by Rafayel Latif and is based in London.",
   },
-  {
-    question: "Who founded Astarus AI?",
-    answer: "Astarus AI was founded by Rafayel Latif.",
-  },
-
-  // What it does / who it serves
-  {
-    question: "What kinds of products does Astarus AI help teams build?",
-    answer:
-      "Astarus AI helps teams build continuously learning language-model applications for personalization, copilots, and domain-specific assistants.",
-  },
-  {
-    question: "What types of customers does Astarus AI work with?",
-    answer:
-      "Astarus AI works with product teams and enterprises that need domain-specific and personalized LLMs.",
-  },
-
-  // Core LUT-LLM idea
   {
     question: "What is the core idea behind Astarus AI’s LUT-LLM architecture?",
     answer:
-      "Astarus AI embeds a lightweight lookup-table layer inside transformer blocks so models can adapt in place from live user interactions.",
+      "Astarus AI embeds lightweight lookup-table layers inside transformer blocks so models can adapt in place from live user interactions while keeping the base model weights frozen.",
   },
   {
-    question: "How does Astarus AI differ from standard fine-tuning?",
+    question: "How does Astarus AI differ from standard fine-tuning and classic RAG?",
     answer:
-      "Instead of retraining base model weights, Astarus AI keeps the base model frozen and updates fast LUTs for each user or tenant.",
+      "Unlike standard fine-tuning, Astarus AI does not retrain base model weights; it updates fast per-user or per-tenant LUTs instead. Compared with classic RAG, it stores user- and tenant-specific behaviour inside the model via LUTs rather than relying purely on external retrieval.",
   },
   {
-    question: "How does Astarus AI differ from classic RAG pipelines?",
+    question: "What are typical use-cases for Astarus AI?",
     answer:
-      "Compared with classic RAG, Astarus AI uses LUTs inside the model to store and recall user- and tenant-specific behavior without relying purely on external retrieval.",
-  },
-
-  // Continuous learning / personalization
-  {
-    question: "How does Astarus AI learn from live user interactions?",
-    answer:
-      "Astarus AI updates per-user or per-tenant LUTs from live interactions so the model gradually adapts to each team’s style and edge cases.",
-  },
-  {
-    question: "How does Astarus AI use LUTs for personalization?",
-    answer:
-      "Each user or tenant gets its own LUT, which stores patterns from their data and feedback so responses become more personalized over time.",
-  },
-
-  // Products & use cases
-  {
-    question: "What core product modules does Astarus AI provide?",
-    answer:
-      "Astarus AI provides a core LUT-LLM engine, an API for per-user and per-tenant personalization, and tooling for feedback loops and evaluation.",
-  },
-  {
-    question: "In which use cases is Astarus AI typically applied?",
-    answer:
-      "Astarus AI is used in customer support, internal knowledge assistants, sales enablement, and research copilots.",
-  },
-  {
-    question: "Which industries can benefit from Astarus AI?",
-    answer:
-      "Astarus AI is used across SaaS, fintech, and other knowledge-heavy industries.",
+      "Typical use-cases include customer support assistants, internal knowledge copilots, sales enablement tools, and research copilots that need to learn continuously from user interactions and adapt to each team’s style and edge cases.",
   },
 ];
 
@@ -121,35 +105,25 @@ function generateLutName() {
 }
 
 /**
- * Clean up raw assistant text:
- * - Remove "Assistant:" prefixes
- * - Chop off any trailing "User: ..." segments
- * - Remove junk like ".:" and everything after that
+ * Clean up raw assistant text
  */
 function cleanAnswer(raw: string): string {
   let text = raw;
 
-  // Remove leading "Assistant:"
   text = text.replace(/^Assistant:\s*/i, "");
-  // Remove "Assistant:" when it appears at the start of a new line
   text = text.replace(/\nAssistant:\s*/gi, "\n");
 
-  // Drop everything after a later "User:"
   const userIdx = text.indexOf("\nUser:");
   if (userIdx !== -1) {
     text = text.slice(0, userIdx);
   }
 
-  // Handle ".:" artefact, keep everything up to the period
   const dotColonIdx = text.indexOf(".:");
   if (dotColonIdx !== -1) {
     text = text.slice(0, dotColonIdx + 1);
   }
 
-  // Fix newline followed by stray period
   text = text.replace(/\n\./g, ".");
-
-  // Collapse multiple blank lines
   text = text.replace(/\n{3,}/g, "\n\n");
 
   return text.trim();
@@ -233,7 +207,7 @@ async function generateFromApi(
   wnnBlocks: number[],
   residuals: number[]
 ): Promise<GenerateResponse> {
-  const prompt = `User: ${userMsg}\nAssistant:`; // same as CLI
+  const prompt = `User: ${userMsg}\nAssistant:`;
 
   const payload = {
     prompt,
@@ -241,8 +215,9 @@ async function generateFromApi(
     lut_name: lutName,
     model: MODEL,
     threshold,
-    residuals, // plural, as in your Python script
+    residuals,
     wnn_blocks: wnnBlocks,
+    cost_scale: 10,
   };
 
   console.log("POST /generate payload:", payload);
@@ -265,16 +240,31 @@ async function generateFromApi(
   return json;
 }
 
+// Use the first pre-trained LUT as the default (Astarus AI demo)
+const initialPretrained = PRETRAINED_LUTS[0];
+
 export default function LutDemo() {
-  const [lutName, setLutName] = useState<string>(() => generateLutName());
+  const [lutName, setLutName] = useState<string>(
+    () => initialPretrained?.lutName ?? generateLutName()
+  );
+  const [lutInput, setLutInput] = useState<string>("");
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [threshold, setThreshold] = useState(DEFAULT_THRESHOLD);
 
-  const [wnnBlocks, setWnnBlocks] = useState<number[]>(DEFAULT_WNN_BLOCKS);
-  const [residualMap, setResidualMap] = useState<Record<string, number>>(
-    DEFAULT_RESIDUAL_MAP
+  const [availableBlocks, setAvailableBlocks] = useState<number[]>(
+    initialPretrained ? [...initialPretrained.blocks] : [...DEFAULT_NEW_LUT_BLOCKS]
   );
+  const [wnnBlocks, setWnnBlocks] = useState<number[]>(
+    initialPretrained ? [...initialPretrained.blocks] : [...DEFAULT_NEW_LUT_BLOCKS]
+  );
+  const [residualMap, setResidualMap] = useState<Record<string, number>>(
+    initialPretrained
+      ? { ...initialPretrained.residualMap }
+      : { ...DEFAULT_NEW_LUT_RESIDUALS }
+  );
+  const [newBlockInput, setNewBlockInput] = useState("");
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [isTrainingDocs, setIsTrainingDocs] = useState(false);
@@ -286,12 +276,56 @@ export default function LutDemo() {
   const [lastThresholdUsed, setLastThresholdUsed] = useState<number>();
 
   const hasMessages = useMemo(() => messages.length > 0, [messages.length]);
+  const isReadOnlyLut = useMemo(
+    () => READ_ONLY_LUTS.includes(lutName),
+    [lutName]
+  );
 
-  // Residual array aligned with wnnBlocks
+  // Controlled value for the dropdown based on current lutName
+  const selectedPretrainedValue = useMemo(() => {
+    const cfg = PRETRAINED_LUTS.find((p) => p.lutName === lutName);
+    return cfg?.lutName ?? "";
+  }, [lutName]);
+
+  // Residual array aligned with active wnnBlocks
   const currentResiduals = useMemo(
     () => wnnBlocks.map((b) => residualMap[String(b)] ?? 1.0),
     [wnnBlocks, residualMap]
   );
+
+  const resetCommonState = (label?: string) => {
+    setMessages([]);
+    setStatus(label ?? null);
+    setLastResidualUsed(undefined);
+    setLastThresholdUsed(undefined);
+    setThreshold(DEFAULT_THRESHOLD);
+    setTeachOpen(false);
+    setTeachQuestion("");
+    setTeachAnswer("");
+  };
+
+  const applyPretrainedConfig = (config: PretrainedLutConfig) => {
+    // Copy arrays/objects so state is totally reset
+    setLutName(config.lutName);
+    setAvailableBlocks([...config.blocks]);
+    setWnnBlocks([...config.blocks]);
+    setResidualMap({ ...config.residualMap });
+    resetCommonState(`Switched to pre-trained LUT: ${config.label}`);
+  };
+
+  const switchToLut = (name: string) => {
+    const config = PRETRAINED_LUTS.find((p) => p.lutName === name);
+    if (config) {
+      applyPretrainedConfig(config);
+      return;
+    }
+
+    setLutName(name);
+    setAvailableBlocks([...DEFAULT_NEW_LUT_BLOCKS]);
+    setWnnBlocks([...DEFAULT_NEW_LUT_BLOCKS]);
+    setResidualMap({ ...DEFAULT_NEW_LUT_RESIDUALS });
+    resetCommonState(`Switched to LUT: ${name}`);
+  };
 
   const handleSend = async () => {
     const trimmed = input.trim();
@@ -334,18 +368,30 @@ export default function LutDemo() {
   };
 
   const handleNewLut = () => {
-    const newName = generateLutName();
-    setLutName(newName);
-    setMessages([]);
-    setStatus(`Switched to new LUT: ${newName}`);
-    setLastResidualUsed(undefined);
-    setLastThresholdUsed(undefined);
-    setWnnBlocks(DEFAULT_WNN_BLOCKS);
-    setResidualMap(DEFAULT_RESIDUAL_MAP);
+    const pretrainedNames = PRETRAINED_LUTS.map((p) => p.lutName);
+    let newName = generateLutName();
+    while (pretrainedNames.includes(newName)) {
+      newName = generateLutName();
+    }
+    switchToLut(newName);
+  };
+
+  const handleLoadLut = () => {
+    const trimmed = lutInput.trim();
+    if (!trimmed) return;
+    switchToLut(trimmed);
   };
 
   const handleTrainFakeDocsClick = async () => {
     if (isTrainingDocs) return;
+
+    if (isReadOnlyLut) {
+      setStatus(
+        "This LUT is a pre-trained demo. Create or load another LUT to train on example docs."
+      );
+      return;
+    }
+
     setIsTrainingDocs(true);
     setStatus("Training LUT on Astarus AI example docs...");
     try {
@@ -359,6 +405,13 @@ export default function LutDemo() {
   };
 
   const handleTeach = async () => {
+    if (isReadOnlyLut) {
+      setStatus(
+        "This LUT is a pre-trained demo. Create or load another LUT to teach custom Q&A."
+      );
+      return;
+    }
+
     const q = teachQuestion.trim();
     const a = teachAnswer.trim();
     if (!q || !a) {
@@ -392,6 +445,43 @@ export default function LutDemo() {
     }));
   };
 
+  const handleDeleteBlock = (block: number) => {
+    if (isReadOnlyLut) return;
+    setAvailableBlocks((prev) => prev.filter((b) => b !== block));
+    setWnnBlocks((prev) => prev.filter((b) => b !== block));
+    setResidualMap((prev) => {
+      const copy = { ...prev };
+      delete copy[String(block)];
+      return copy;
+    });
+  };
+
+  const handleAddBlock = () => {
+    if (isReadOnlyLut) return;
+
+    const trimmed = newBlockInput.trim();
+    if (!trimmed) return;
+
+    const parsed = parseInt(trimmed, 10);
+    if (Number.isNaN(parsed)) {
+      setStatus("Please enter a valid integer for the LUT block index.");
+      return;
+    }
+
+    if (availableBlocks.includes(parsed)) {
+      setStatus("That LUT block already exists.");
+      return;
+    }
+
+    setAvailableBlocks((prev) => [...prev, parsed]);
+    setWnnBlocks((prev) => [...prev, parsed]);
+    setResidualMap((prev) => ({
+      ...prev,
+      [String(parsed)]: 1.0,
+    }));
+    setNewBlockInput("");
+  };
+
   return (
     <div className="min-h-screen">
       <Navbar />
@@ -413,17 +503,22 @@ export default function LutDemo() {
           >
             <h1 className="text-primary">LUT-LLM Interactive Demo</h1>
             <p className="text-xl text-muted-foreground">
-              Play with a lookup-table augmented Mistral model. Teach it facts,
-              tune its memory, and see how residuals &amp; thresholds change its
-              behaviour in real time.
+              Play with a lookup-table augmented Mistral model. The default LUT
+              is pre-loaded with Astarus AI notes so you can start asking
+              questions immediately.
             </p>
             <div className="flex flex-wrap gap-3 justify-center text-sm text-muted-foreground">
               <span className="px-3 py-1 rounded-full bg-background/60 border">
                 Model: <span className="font-mono">{MODEL}</span>
               </span>
-              <span className="px-3 py-1 rounded-full bg-background/60 border">
+              <span className="px-3 py-1 rounded-full bg-background/60 border flex items-center gap-2">
                 LUT name:{" "}
                 <span className="font-mono text-primary">{lutName}</span>
+                {isReadOnlyLut && (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/30">
+                    pre-trained demo
+                  </span>
+                )}
               </span>
             </div>
           </motion.div>
@@ -481,12 +576,12 @@ export default function LutDemo() {
                       <p className="mb-2">Try asking things like:</p>
                       <ul className="list-disc list-inside space-y-1">
                         <li>“What does Astarus AI do?”</li>
-                        <li>“Where does Astarus AI focus on?”</li>
+                        <li>“Who founded Astarus AI?”</li>
                         <li>“Explain Astarus AI&apos;s LUT-LLMs.”</li>
                       </ul>
                       <p className="mt-3">
-                        You can also teach the model your own Q&amp;A pairs
-                        below.
+                        Or create/load another LUT on the right to train your
+                        own memories.
                       </p>
                     </div>
                   )}
@@ -572,9 +667,62 @@ export default function LutDemo() {
                     variant="ghost"
                     className="h-8 w-8"
                     onClick={handleNewLut}
+                    title="Create a new random LUT"
                   >
                     <RefreshCw className="w-4 h-4" />
                   </Button>
+                </div>
+
+                {/* Pre-trained demos dropdown (controlled by lutName) */}
+                {PRETRAINED_LUTS.length > 0 && (
+                  <div className="space-y-1 text-xs mb-2">
+                    <label className="text-muted-foreground">
+                      Pre-trained demos
+                    </label>
+                    <select
+                      className="w-full rounded-lg border bg-background/80 px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-primary/60"
+                      value={selectedPretrainedValue}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        const config = PRETRAINED_LUTS.find(
+                          (p) => p.lutName === val
+                        );
+                        if (config) applyPretrainedConfig(config);
+                      }}
+                    >
+                      <option value="">None / custom</option>
+                      {PRETRAINED_LUTS.map((p) => (
+                        <option key={p.lutName} value={p.lutName}>
+                          {p.label} ({p.lutName})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {/* Load / switch LUT by name */}
+                <div className="space-y-2 text-xs">
+                  <label className="text-muted-foreground">
+                    Load or switch LUT by name
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      className="flex-1 rounded-lg border bg-background/80 px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-primary/60"
+                      placeholder="e.g. demo-myteam123"
+                      value={lutInput}
+                      onChange={(e) => setLutInput(e.target.value)}
+                    />
+                    <Button size="sm" variant="outline" onClick={handleLoadLut}>
+                      Load
+                    </Button>
+                  </div>
+                  {isReadOnlyLut && (
+                    <p className="text-[11px] text-amber-500">
+                      This LUT is a pre-trained Astarus demo. Create or load
+                      another LUT to train it.
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-4 text-sm">
@@ -608,11 +756,11 @@ export default function LutDemo() {
                       </span>
                     </div>
 
-                    {AVAILABLE_WNN_BLOCKS.map((block) => {
+                    {availableBlocks.map((block) => {
                       const enabled = wnnBlocks.includes(block);
                       const residual =
                         residualMap[String(block)] ??
-                        DEFAULT_RESIDUAL_MAP[String(block)] ??
+                        DEFAULT_NEW_LUT_RESIDUALS[String(block)] ??
                         1.0;
 
                       return (
@@ -631,9 +779,25 @@ export default function LutDemo() {
                                 Block {block}
                               </span>
                             </label>
-                            <span className="font-mono text-xs">
-                              {residual.toFixed(2)}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-xs">
+                                {residual.toFixed(2)}
+                              </span>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-6 w-6"
+                                onClick={() => handleDeleteBlock(block)}
+                                disabled={isReadOnlyLut}
+                                title={
+                                  isReadOnlyLut
+                                    ? "Cannot delete blocks in pre-trained demos"
+                                    : "Delete this block"
+                                }
+                              >
+                                <X className="w-3 h-3" />
+                              </Button>
+                            </div>
                           </div>
                           <input
                             type="range"
@@ -656,6 +820,30 @@ export default function LutDemo() {
                         </div>
                       );
                     })}
+
+                    {!isReadOnlyLut && (
+                      <div className="mt-3 space-y-1 text-xs">
+                        <label className="text-muted-foreground">
+                          Add LUT block
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            className="flex-1 rounded-lg border bg-background/80 px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-primary/60"
+                            placeholder="e.g. -9 or 12"
+                            value={newBlockInput}
+                            onChange={(e) => setNewBlockInput(e.target.value)}
+                          />
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={handleAddBlock}
+                          >
+                            Add
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </Card>
@@ -676,16 +864,27 @@ export default function LutDemo() {
                   blocks).
                 </p>
 
+                {isReadOnlyLut && (
+                  <p className="text-[11px] text-amber-500">
+                    The current LUT is a pre-trained Astarus demo. Create or
+                    load another LUT to store your own Q&amp;A memories.
+                  </p>
+                )}
+
                 <Button
                   variant="outline"
                   size="sm"
                   className="mt-1"
-                  onClick={() => setTeachOpen((x) => !x)}
+                  onClick={() => {
+                    if (isReadOnlyLut) return;
+                    setTeachOpen((x) => !x);
+                  }}
+                  disabled={isReadOnlyLut}
                 >
                   {teachOpen ? "Hide teaching form" : "Open teaching form"}
                 </Button>
 
-                {teachOpen && (
+                {teachOpen && !isReadOnlyLut && (
                   <div className="space-y-2 mt-3">
                     <div className="space-y-1 text-xs">
                       <label className="text-muted-foreground">
@@ -732,27 +931,38 @@ export default function LutDemo() {
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Load a small curated knowledge base about Astarus AI into the
-                  LUT. Then ask the model questions about Astarus AI. Training
-                  uses your currently enabled WNN blocks.
+                  LUT. For the default Astarus demo LUT, this knowledge is
+                  already pre-loaded so you can start chatting right away.
                 </p>
-                <Button
-                  size="sm"
-                  className="w-full flex items-center justify-center gap-2"
-                  onClick={handleTrainFakeDocsClick}
-                  disabled={isTrainingDocs}
-                >
-                  {isTrainingDocs ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                      Training on docs...
-                    </>
-                  ) : (
-                    <>
-                      <Rocket className="w-4 h-4" />
-                      Train on Astarus AI Internal Example docs.
-                    </>
-                  )}
-                </Button>
+
+                {!isReadOnlyLut && (
+                  <Button
+                    size="sm"
+                    className="w-full flex items-center justify-center gap-2"
+                    onClick={handleTrainFakeDocsClick}
+                    disabled={isTrainingDocs}
+                  >
+                    {isTrainingDocs ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        Training on docs...
+                      </>
+                    ) : (
+                      <>
+                        <Rocket className="w-4 h-4" />
+                        Train on Astarus AI example docs
+                      </>
+                    )}
+                  </Button>
+                )}
+
+                {isReadOnlyLut && (
+                  <p className="text-[11px] text-muted-foreground">
+                    This pre-trained demo LUT already has the Astarus docs baked
+                    in. Switch to a custom LUT if you want to run the training
+                    flow yourself.
+                  </p>
+                )}
               </Card>
             </motion.div>
 
@@ -767,20 +977,43 @@ export default function LutDemo() {
                 </div>
                 <ul className="text-xs text-muted-foreground space-y-1.5">
                   <li>
-                    • Click “Train on Astarus AI Internal Example docs” to load
-                    factual knowledge (with your chosen WNN blocks).
+                    • The default LUT{" "}
+                    <span className="font-mono">
+                      {initialPretrained?.lutName}
+                    </span>{" "}
+                    is pre-trained on Astarus AI notes and is read-only.
                   </li>
-                  <li>• Ask questions about Astarus AI and see how answers improve.</li>
                   <li>
-                    • Increase the residual for a block to make that LUT “louder”
-                    versus base Mistral.
+                    • Use the pre-trained dropdown to jump back to the Astarus
+                    demo or any future demos you add.
+                  </li>
+                  <li>
+                    • Click the refresh icon in “LUT Controls” to create a new
+                    trainable LUT.
+                  </li>
+                  <li>
+                    • Use the “Load or switch LUT by name” field to jump to any
+                    existing LUT id.
+                  </li>
+                  <li>
+                    • For non pre-trained LUTs, click “Train on Astarus AI
+                    example docs” to inject the curated knowledge base.
+                  </li>
+                  <li>
+                    • Increase the residual for a block to make that LUT
+                    “louder” versus base Mistral.
                   </li>
                   <li>
                     • Lower the threshold to make the LUT fire more often; raise
                     it to rely more on the base model.
                   </li>
                   <li>
-                    • Use “Store Q&amp;A in LUT” for your own custom memories.
+                    • Use “Store Q&amp;A in LUT” on a trainable LUT for your own
+                    custom memories.
+                  </li>
+                  <li>
+                    • In non pre-trained LUTs, you can add/delete LUT blocks to
+                    explore different WNN layouts.
                   </li>
                 </ul>
               </Card>

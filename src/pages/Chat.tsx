@@ -83,6 +83,9 @@ function generateLutName() {
 function cleanAnswer(raw: string): string {
   let text = raw;
 
+  // Strip obvious [INST] wrappers if they slip through
+  text = text.replace(/\[INST\]/g, "").replace(/\[\/INST\]/g, "");
+
   text = text.replace(/^Assistant:\s*/i, "");
   text = text.replace(/\nAssistant:\s*/gi, "\n");
 
@@ -121,12 +124,13 @@ function extractAssistantAnswer(userMsg: string, completion: string): string {
     text = text.slice(idxAssistant + "Assistant:".length);
   }
 
-  const nextUser = text.indexOf("User:");
-  if (nextUser !== -1) {
-    text = text.slice(0, nextUser);
+  // Now cut off everything after "[INST]" (like Python)
+  let answer = text.trim();
+  const instIdx = answer.indexOf("[INST]");
+  if (instIdx !== -1) {
+    answer = answer.slice(0, instIdx).trim();
   }
 
-  const answer = text.trim();
   if (!answer) {
     return cleanAnswer(completion.trim());
   }
@@ -139,9 +143,13 @@ async function trainLut(
   labelContext: string | null,
   wnnBlocks: number[]
 ) {
+
+  const wrappedLabel = `[INST]${label}[/INST]`;
+  const wrappedContext = labelContext ? `${labelContext}</s>` : null;
+
   const payload = {
-    label,
-    label_context: labelContext,
+    label: wrappedLabel,
+    label_context: wrappedContext,
     lut_name: lutName,
     model: MODEL,
     wnn_blocks: wnnBlocks,
@@ -172,7 +180,8 @@ async function generateFromApi(
   wnnBlocks: number[],
   residuals: number[]
 ): Promise<GenerateResponse> {
-  const prompt = `User: ${userMsg}\nAssistant:`;
+  const basePrompt = `User: ${userMsg}\nAssistant:`;
+  const prompt = `[INST]${basePrompt}[/INST]`;
 
   const payload = {
     prompt,
@@ -204,6 +213,7 @@ async function generateFromApi(
 
   return json;
 }
+
 
 // Use the first pre-trained LUT as the default (Astarus AI demo)
 const initialPretrained = PRETRAINED_LUTS[0];

@@ -8,7 +8,9 @@ import Technology from "./pages/Technology";
 import Team from "./pages/Team";
 import Investors from "./pages/Investors";
 import Contact from "./pages/Contact";
+import Chat from "./pages/Chat";
 import NotFound from "./pages/NotFound";
+
 import ScrollToTop from "./components/ScrollToTop";
 
 const queryClient = new QueryClient();
@@ -26,6 +28,7 @@ const App = () => (
           <Route path="/team" element={<Team />} />
           <Route path="/investors" element={<Investors />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/chat" element={<Chat />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

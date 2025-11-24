@@ -76,7 +76,7 @@ export default function Technology() {
       
       {/* Hero Section */}
       <motion.section
-        className="relative pt-32 pb-20 px-4 overflow-hidden"
+        className="relative pt-20 md:pt-28 lg:pt-32 pb-12 md:pb-16 lg:pb-20 px-4 overflow-hidden"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
@@ -93,11 +93,11 @@ export default function Technology() {
         
         <div className="container relative z-10">
           <motion.div
-            className="max-w-4xl mx-auto text-center space-y-6"
+            className="max-w-4xl mx-auto text-center space-y-4 sm:space-y-6 px-4"
             variants={fadeInUp(0.1)}
           >
-            <h1 className="text-primary">The Technology Behind Astarus</h1>
-            <p className="text-xl text-muted-foreground">
+            <h1 className="text-primary text-3xl sm:text-4xl md:text-5xl lg:text-6xl">The Technology Behind Astarus</h1>
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground">
               A revolutionary approach to continuous learning in large language models
             </p>
           </motion.div>
@@ -106,7 +106,7 @@ export default function Technology() {
 
       {/* Architecture Section */}
       <motion.section
-        className="py-20 px-4 bg-secondary/5"
+        className="py-8 sm:py-12 md:py-16 lg:py-20 px-4 bg-secondary/5"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
@@ -117,9 +117,9 @@ export default function Technology() {
             className="grid lg:grid-cols-2 gap-12 items-center max-w-7xl mx-auto"
             variants={staggerContainer(0.2, 0.2)}
           >
-            <motion.div className="space-y-6" variants={fadeInUp(0.1)}>
-              <h2 className="text-foreground">Memory-Augmented Architecture</h2>
-              <p className="text-lg text-muted-foreground">
+            <motion.div className="space-y-4 sm:space-y-6" variants={fadeInUp(0.1)}>
+              <h2 className="text-2xl sm:text-3xl md:text-4xl text-foreground">Memory-Augmented Architecture</h2>
+              <p className="text-base sm:text-lg text-muted-foreground">
                 Our LUT (Lookup Table) augmented transformers represent a paradigm shift in how AI models learn and adapt.
               </p>
               <motion.div className="space-y-4" variants={staggerContainer(0.1, 0.1)}>
@@ -159,16 +159,16 @@ export default function Technology() {
 
       {/* Performance Metrics */}
       <motion.section
-        className="py-20 px-4 bg-primary/5"
+        className="py-8 sm:py-12 md:py-16 lg:py-20 px-4 bg-primary/5"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
         variants={fadeIn()}
       >
         <div className="container">
-          <motion.div className="max-w-3xl mx-auto text-center mb-16" variants={fadeInUp(0.1)}>
-            <h2 className="text-foreground mb-4">Proven Performance</h2>
-            <p className="text-lg text-muted-foreground">
+          <motion.div className="max-w-3xl mx-auto text-center mb-10 sm:mb-12 md:mb-16 px-4" variants={fadeInUp(0.1)}>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl text-foreground mb-3 sm:mb-4">Proven Performance</h2>
+            <p className="text-base sm:text-lg text-muted-foreground">
               Benchmarked across multiple model sizes and domains
             </p>
           </motion.div>
@@ -185,10 +185,10 @@ export default function Technology() {
                 whileTap={scaleOnHover.whileTap}
                 transition={scaleOnHover.transition}
               >
-                <Card className={`p-6 text-center card-hover border-2 ${borderClass}`}>
-                  <Icon className={`w-12 h-12 mx-auto mb-4 ${textClass}`} />
-                  <div className={`text-4xl font-bold mb-2 ${textClass}`}>{value}</div>
-                  <p className="text-sm text-muted-foreground">{label}</p>
+                <Card className={`p-5 sm:p-6 text-center card-hover border-2 ${borderClass}`}>
+                  <Icon className={`w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 ${textClass}`} />
+                  <div className={`text-3xl sm:text-4xl font-bold mb-2 ${textClass}`}>{value}</div>
+                  <p className="text-xs sm:text-sm text-muted-foreground">{label}</p>
                 </Card>
               </motion.div>
             ))}
@@ -198,7 +198,7 @@ export default function Technology() {
 
       {/* Technical Details */}
       <motion.section
-        className="py-20 px-4 bg-secondary/5"
+        className="py-8 sm:py-12 md:py-16 lg:py-20 px-4 bg-secondary/5"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
@@ -206,16 +206,16 @@ export default function Technology() {
       >
         <div className="container">
           <div className="max-w-4xl mx-auto">
-            <motion.h2 className="text-foreground mb-12 text-center" variants={fadeInUp(0.1)}>
+            <motion.h2 className="text-2xl sm:text-3xl md:text-4xl text-foreground mb-8 sm:mb-12 text-center px-4" variants={fadeInUp(0.1)}>
               How It Works
             </motion.h2>
             
-            <motion.div className="space-y-0.5" variants={staggerContainer(0.15, 0.2)}>
+            <motion.div className="space-y-2 sm:space-y-0.5" variants={staggerContainer(0.15, 0.2)}>
               {workflowSteps.map(({ title, colorClass, borderClass, description }, index) => (
                 <motion.div key={title} variants={fadeInUp(index * 0.05)}>
-                  <Card className={`p-4 border-l-4 ${borderClass}`}>
-                    <h3 className={`text-xl font-bold mb-2 ${colorClass}`}>{title}</h3>
-                    <p className="text-muted-foreground text-sm">{description}</p>
+                  <Card className={`p-4 sm:p-5 border-l-4 ${borderClass}`}>
+                    <h3 className={`text-lg sm:text-xl font-bold mb-2 ${colorClass}`}>{title}</h3>
+                    <p className="text-muted-foreground text-xs sm:text-sm leading-relaxed">{description}</p>
                   </Card>
                 </motion.div>
               ))}

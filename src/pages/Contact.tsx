@@ -12,11 +12,11 @@ export default function Contact() {
       <Navbar />
       
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-4">
+      <section className="pt-16 sm:pt-20 md:pt-28 lg:pt-32 pb-8 sm:pb-12 md:pb-16 lg:pb-20 px-4">
         <div className="container">
-          <div className="max-w-4xl mx-auto text-center space-y-6 animate-fade-in">
-            <h1 className="text-primary">Get in Touch</h1>
-            <p className="text-xl text-muted-foreground">
+          <div className="max-w-4xl mx-auto text-center space-y-4 sm:space-y-6 animate-fade-in">
+            <h1 className="text-primary text-3xl sm:text-4xl md:text-5xl lg:text-6xl">Get in Touch</h1>
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground px-4">
               Whether you're an investor, potential partner, or just curious about our technology, we'd love to hear from you.
             </p>
           </div>
@@ -24,9 +24,9 @@ export default function Contact() {
       </section>
 
       {/* Contact Section */}
-      <section className="py-12 px-4">
+      <section className="py-8 sm:py-12 px-4">
         <div className="container">
-          <div className="max-w-6xl mx-auto grid lg:grid-cols-3 gap-8">
+          <div className="max-w-6xl mx-auto grid lg:grid-cols-3 gap-6 sm:gap-8">
             {/* Contact Info */}
             <div className="space-y-6">
               <Card className="p-6 border-2 border-primary/20">
@@ -61,9 +61,9 @@ export default function Contact() {
             </div>
 
             {/* Contact Form */}
-            <Card className="lg:col-span-2 p-8">
-              <h2 className="text-2xl font-bold mb-6 text-foreground">Send us a Message</h2>
-              <form className="space-y-6">
+            <Card className="lg:col-span-2 p-5 sm:p-6 md:p-8">
+              <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-foreground">Send us a Message</h2>
+              <form className="space-y-4 sm:space-y-6">
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <label className="text-sm font-medium text-foreground mb-2 block">
@@ -126,28 +126,28 @@ export default function Contact() {
       </section>
 
       {/* Additional Info */}
-      <section className="py-20 px-4 bg-muted/30">
+      <section className="py-12 sm:py-16 md:py-20 px-4 bg-muted/30">
         <div className="container">
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-center text-foreground mb-12">Frequently Asked Questions</h2>
-            <div className="space-y-6">
-              <Card className="p-6">
-                <h3 className="font-bold text-lg mb-2 text-foreground">How can I invest in Astarus?</h3>
-                <p className="text-muted-foreground">
+            <h2 className="text-center text-2xl sm:text-3xl md:text-4xl text-foreground mb-8 sm:mb-12">Frequently Asked Questions</h2>
+            <div className="space-y-4 sm:space-y-6">
+              <Card className="p-5 sm:p-6">
+                <h3 className="font-bold text-base sm:text-lg mb-2 text-foreground">How can I invest in Astarus?</h3>
+                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
                   We're currently in discussions with strategic investors. Please reach out via the contact form selecting "Investment Opportunities" and we'll be in touch to share our investor deck and schedule a call.
                 </p>
               </Card>
               
-              <Card className="p-6">
-                <h3 className="font-bold text-lg mb-2 text-foreground">Is the technology available for licensing?</h3>
-                <p className="text-muted-foreground">
+              <Card className="p-5 sm:p-6">
+                <h3 className="font-bold text-base sm:text-lg mb-2 text-foreground">Is the technology available for licensing?</h3>
+                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
                   We're open to strategic partnerships and technology licensing discussions with select organizations. Contact us to explore collaboration opportunities.
                 </p>
               </Card>
               
-              <Card className="p-6">
-                <h3 className="font-bold text-lg mb-2 text-foreground">Are you hiring?</h3>
-                <p className="text-muted-foreground">
+              <Card className="p-5 sm:p-6">
+                <h3 className="font-bold text-base sm:text-lg mb-2 text-foreground">Are you hiring?</h3>
+                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
                   Yes! We're always looking for talented AI researchers and engineers. Select "Career Opportunities" in the form above or visit our Team page for more information.
                 </p>
               </Card>

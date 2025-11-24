@@ -83,11 +83,11 @@ const ProblemOctagon = ({ problem, index, position }: { problem: typeof problems
   };
 
   return (
-    <div className={`flex items-center gap-6 ${positionClasses[position as keyof typeof positionClasses]}`}>
+    <div className={`flex flex-col md:flex-row items-center gap-4 md:gap-6 ${positionClasses[position as keyof typeof positionClasses]}`}>
       {/* Square with image */}
       <div className="relative flex-shrink-0">
         <motion.div
-          className="relative group w-48 h-48"
+          className="relative group w-28 h-28 sm:w-36 sm:h-36 md:w-40 md:h-40 lg:w-48 lg:h-48"
           whileHover={{ scale: 1.1, rotate: 5 }}
           transition={{ duration: 0.3 }}
         >
@@ -131,8 +131,8 @@ const ProblemOctagon = ({ problem, index, position }: { problem: typeof problems
           </svg>
           
           {/* Icon badge on square */}
-          <div className={`absolute -top-2 -right-2 w-14 h-14 rounded-full ${theme.iconBg} flex items-center justify-center border-4 border-white dark:border-gray-800 shadow-xl group-hover:scale-110 transition-transform duration-300 z-10`}>
-            <Icon className={`w-7 h-7 ${theme.iconColor}`} />
+          <div className={`absolute -top-1 -right-1 md:-top-2 md:-right-2 w-10 h-10 md:w-14 md:h-14 rounded-full ${theme.iconBg} flex items-center justify-center border-2 md:border-4 border-white dark:border-gray-800 shadow-xl group-hover:scale-110 transition-transform duration-300 z-10`}>
+            <Icon className={`w-5 h-5 md:w-7 md:h-7 ${theme.iconColor}`} />
           </div>
           
           {/* Glow effect */}
@@ -141,17 +141,17 @@ const ProblemOctagon = ({ problem, index, position }: { problem: typeof problems
       </div>
 
       {/* Text content outside square */}
-      <div className={`flex-1 ${textAlignClasses[position as keyof typeof textAlignClasses]}`}>
+      <div className={`flex-1 text-center md:${textAlignClasses[position as keyof typeof textAlignClasses]}`}>
         <motion.div
           initial={{ opacity: 0, x: position.includes('left') ? -20 : 20 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: index * 0.1 + 0.3 }}
         >
-          <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 group-hover:text-primary transition-colors">
+          <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 mb-2 md:mb-3 group-hover:text-primary transition-colors">
             {problem.title}
           </h3>
-          <p className="text-base text-gray-700 leading-relaxed max-w-md">
+          <p className="text-sm sm:text-base text-gray-700 leading-relaxed max-w-md mx-auto md:mx-0 px-2 sm:px-0">
             {problem.description}
           </p>
         </motion.div>
@@ -163,7 +163,7 @@ const ProblemOctagon = ({ problem, index, position }: { problem: typeof problems
 export const Problem = () => {
   return (
     <motion.section
-      className="pt-12 pb-8 px-4 relative bg-white overflow-hidden rounded-t-3xl -mt-12 z-10"
+      className="pt-8 sm:pt-12 pb-6 sm:pb-8 px-4 relative bg-white overflow-hidden rounded-t-3xl -mt-12 z-10"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.2 }}
@@ -184,18 +184,18 @@ export const Problem = () => {
           <div className="inline-block px-4 py-2 rounded-full bg-primary/5 border-2 border-primary/20">
             <span className="text-sm font-semibold text-primary">Challenges We Solve</span>
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent px-4">
             The Problem
           </h2>
-          <p className="text-xl text-gray-700 font-medium leading-relaxed">
+          <p className="text-base sm:text-lg md:text-xl text-gray-700 font-medium leading-relaxed px-4">
             Current LLMs lack the ability to learn continuously and adapt in real-time — a fundamental limitation that hinders personalization and enterprise adoption.
           </p>
         </motion.div>
 
         {/* Square N-pattern layout */}
-        <div className="relative max-w-7xl mx-auto py-12 min-h-[600px]">
-          {/* Grid layout for N pattern: 2 columns, 2 rows */}
-          <div className="grid grid-cols-2 gap-12 md:gap-16 h-full">
+        <div className="relative max-w-7xl mx-auto py-6 sm:py-8 md:py-12 min-h-[600px] sm:min-h-[500px] md:min-h-[600px]">
+          {/* Grid layout for N pattern: 1 column on mobile, 2 columns on desktop */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 md:gap-12 lg:gap-16 h-full px-4 sm:px-0">
             {/* Top Left - Problem 0 */}
             <motion.div
               key={0}

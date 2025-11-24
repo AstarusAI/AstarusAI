@@ -33,7 +33,7 @@ const useCases = [
 export const UseCases = () => {
   return (
     <motion.section
-      className="py-24 px-4 bg-gradient-to-b from-white via-gray-50/50 to-white"
+      className="py-12 sm:py-16 md:py-24 px-4 bg-white"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.2 }}
@@ -47,8 +47,8 @@ export const UseCases = () => {
           <div className="inline-block px-4 py-2 rounded-full bg-secondary/5 border-2 border-secondary/20 mb-4">
             <span className="text-sm font-semibold text-secondary">Real-World Impact</span>
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">Transformative Applications</h2>
-          <p className="text-xl text-gray-700 font-medium leading-relaxed">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground px-4">Transformative Applications</h2>
+          <p className="text-base sm:text-lg md:text-xl text-gray-700 font-medium leading-relaxed px-4">
             Enable use cases that were previously impossible or economically unfeasible.
           </p>
         </motion.div>
@@ -68,17 +68,14 @@ export const UseCases = () => {
                 transition={scaleOnHover.transition}
               >
                 <Card
-                  className={`p-8 border-2 card-hover group relative overflow-hidden ${
+                  className={`p-6 sm:p-8 border-2 card-hover group relative overflow-hidden ${
                     index % 2 === 0 ? 'bg-primary/5 border-primary/20' : 'bg-secondary/5 border-secondary/20'
                   }`}
                 >
-                  <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${
-                    index % 2 === 0 ? 'from-primary/20' : 'from-secondary/20'
-                  } to-transparent rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
-                  <div className="relative space-y-6">
-                    <div className="flex items-start gap-4">
+                  <div className="relative space-y-4 sm:space-y-6">
+                    <div className="flex items-start gap-3 sm:gap-4">
                       <motion.div
-                        className={`w-16 h-16 rounded-xl flex items-center justify-center flex-shrink-0 border-2 shadow-lg ${
+                        className={`w-12 h-12 sm:w-16 sm:h-16 rounded-xl flex items-center justify-center flex-shrink-0 border-2 shadow-lg ${
                           index % 2 === 0 
                             ? 'bg-primary/5 border-primary/20' 
                             : 'bg-secondary/5 border-secondary/20'
@@ -87,18 +84,18 @@ export const UseCases = () => {
                         transition={{ duration: 0.3 }}
                       >
                         <Icon
-                          className={`w-8 h-8 ${
+                          className={`w-6 h-6 sm:w-8 sm:h-8 ${
                             index % 2 === 0 ? 'text-primary' : 'text-secondary'
                           }`}
                         />
                       </motion.div>
                       <div className="flex-1">
-                        <h3 className={`text-2xl font-bold text-gray-900 mb-2 group-hover:${
+                        <h3 className={`text-xl sm:text-2xl font-bold text-gray-900 mb-2 group-hover:${
                           index % 2 === 0 ? 'text-primary' : 'text-secondary'
                         } transition-colors`}>{useCase.title}</h3>
                       </div>
                     </div>
-                    <p className="text-gray-700 leading-relaxed font-medium">{useCase.description}</p>
+                    <p className="text-sm sm:text-base text-gray-700 leading-relaxed font-medium">{useCase.description}</p>
                     <div className="pt-2">
                       <div className={`text-sm font-bold mb-3 ${
                         index % 2 === 0 ? 'text-primary' : 'text-secondary'

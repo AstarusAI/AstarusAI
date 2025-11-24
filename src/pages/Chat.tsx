@@ -16,7 +16,7 @@ import {
 import { motion } from "framer-motion";
 import { fadeIn, fadeInUp, staggerContainer } from "@/lib/motion";
 
-const BASE_URL = "https://fhd5rgv0o0dd8i-8000.proxy.runpod.net";
+const BASE_URL = "https://dhzzxfr41qjcz7-8000.proxy.runpod.net";
 const MODEL = "mistral";
 
 // Types
@@ -71,33 +71,6 @@ const DEFAULT_NEW_LUT_RESIDUALS: Record<string, number> = {
 // Match the Python script defaults
 const DEFAULT_THRESHOLD = 0.15;
 const GEN_LENGTH = 128;
-
-const fakeDocs: { question: string; answer: string }[] = [
-  {
-    question: "What is Astarus AI?",
-    answer:
-      "Astarus AI is an AI infrastructure startup that builds continuously learning language-model systems for personalization and domain-specific assistants.",
-  },
-  {
-    question: "Who founded Astarus AI and where is it based?",
-    answer: "Astarus AI was founded by Rafayel Latif and is based in London.",
-  },
-  {
-    question: "What is the core idea behind Astarus AI’s LUT-LLM architecture?",
-    answer:
-      "Astarus AI embeds lightweight lookup-table layers inside transformer blocks so models can adapt in place from live user interactions while keeping the base model weights frozen.",
-  },
-  {
-    question: "How does Astarus AI differ from standard fine-tuning and classic RAG?",
-    answer:
-      "Unlike standard fine-tuning, Astarus AI does not retrain base model weights; it updates fast per-user or per-tenant LUTs instead. Compared with classic RAG, it stores user- and tenant-specific behaviour inside the model via LUTs rather than relying purely on external retrieval.",
-  },
-  {
-    question: "What are typical use-cases for Astarus AI?",
-    answer:
-      "Typical use-cases include customer support assistants, internal knowledge copilots, sales enablement tools, and research copilots that need to learn continuously from user interactions and adapt to each team’s style and edge cases.",
-  },
-];
 
 function generateLutName() {
   const rand = Math.random().toString(16).slice(2, 10);
@@ -190,14 +163,6 @@ async function trainLut(
     );
   }
   return json;
-}
-
-async function trainFakeDocs(lutName: string, wnnBlocks: number[]) {
-  for (const doc of fakeDocs) {
-    const label = doc.answer;
-    const ctx = doc.question;
-    await trainLut(lutName, label, ctx, wnnBlocks);
-  }
 }
 
 async function generateFromApi(
@@ -382,27 +347,6 @@ export default function LutDemo() {
     switchToLut(trimmed);
   };
 
-  const handleTrainFakeDocsClick = async () => {
-    if (isTrainingDocs) return;
-
-    if (isReadOnlyLut) {
-      setStatus(
-        "This LUT is a pre-trained demo. Create or load another LUT to train on example docs."
-      );
-      return;
-    }
-
-    setIsTrainingDocs(true);
-    setStatus("Training LUT on Astarus AI example docs...");
-    try {
-      await trainFakeDocs(lutName, wnnBlocks);
-      setStatus("✅ Trained on Astarus AI internal example docs.");
-    } catch (err: any) {
-      setStatus(err?.message || "Training failed");
-    } finally {
-      setIsTrainingDocs(false);
-    }
-  };
 
   const handleTeach = async () => {
     if (isReadOnlyLut) {
@@ -934,27 +878,6 @@ export default function LutDemo() {
                   LUT. For the default Astarus demo LUT, this knowledge is
                   already pre-loaded so you can start chatting right away.
                 </p>
-
-                {!isReadOnlyLut && (
-                  <Button
-                    size="sm"
-                    className="w-full flex items-center justify-center gap-2"
-                    onClick={handleTrainFakeDocsClick}
-                    disabled={isTrainingDocs}
-                  >
-                    {isTrainingDocs ? (
-                      <>
-                        <RefreshCw className="w-4 h-4 animate-spin" />
-                        Training on docs...
-                      </>
-                    ) : (
-                      <>
-                        <Rocket className="w-4 h-4" />
-                        Train on Astarus AI example docs
-                      </>
-                    )}
-                  </Button>
-                )}
 
                 {isReadOnlyLut && (
                   <p className="text-[11px] text-muted-foreground">

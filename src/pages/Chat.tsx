@@ -200,7 +200,7 @@ async function generateFromApi(
     threshold,
     residuals,
     wnn_blocks: wnnBlocks,
-    cost_scale: 1,
+    cost_scale: 5,
   };
 
   console.log("POST /generate payload:", payload);
@@ -381,11 +381,11 @@ export default function LutDemo() {
       setStatus("Please provide both a question and an answer.");
       return;
     }
-
-    const label = `User: ${q}\nAssistant: ${a}`;
+    const label_context = `User: ${q}\nAssistant: `;
+    const label = a;
     setStatus("Teaching custom Q&A to LUT...");
     try {
-      await trainLut(lutName, label, null, wnnBlocks);
+      await trainLut(lutName, label, label_context, wnnBlocks);
       setStatus("✅ Stored this Q&A in the LUT. Future answers should reflect it.");
       setTeachQuestion("");
       setTeachAnswer("");

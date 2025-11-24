@@ -47,9 +47,9 @@ const PRETRAINED_LUTS: PretrainedLutConfig[] = [
     lutName: "demo-f0d18034",
     blocks: [-1, -4, -9],
     residualMap: {
-      "-1": 0.25,
+      "-1": 0.15,
       "-4": 0.15,
-      "-9": 0.08,
+      "-9": 0.15,
     },
     readOnly: true,
   },
@@ -69,7 +69,7 @@ const DEFAULT_NEW_LUT_RESIDUALS: Record<string, number> = {
 };
 
 // Match the Python script defaults
-const DEFAULT_THRESHOLD = 0.15;
+const DEFAULT_THRESHOLD = 0.25;
 const GEN_LENGTH = 128;
 
 function generateLutName() {

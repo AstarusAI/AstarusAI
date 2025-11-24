@@ -110,25 +110,35 @@ function cleanAnswer(raw: string): string {
  */
 function extractAssistantAnswer(userMsg: string, completion: string): string {
   const patternUser = `User: ${userMsg}`;
-  let text: string;
+  let text: string = completion;
 
+  // Scope down to the part after the specific "User: <msg>"
   const idxUser = completion.indexOf(patternUser);
   if (idxUser !== -1) {
     text = completion.slice(idxUser + patternUser.length);
-  } else {
-    text = completion;
   }
 
+  // Then find the first "Assistant:" after that
   const idxAssistant = text.indexOf("Assistant:");
   if (idxAssistant !== -1) {
     text = text.slice(idxAssistant + "Assistant:".length);
   }
 
-  // Now cut off everything after "[INST]" (like Python)
   let answer = text.trim();
-  const instIdx = answer.indexOf("[INST]");
-  if (instIdx !== -1) {
-    answer = answer.slice(0, instIdx).trim();
+
+  // Cut off at any of these markers: next [INST], next User:, or next Assistant:
+  const cutMarkers = ["[INST]", "User:", "Assistant:"];
+  let cutIdx = answer.length;
+
+  for (const marker of cutMarkers) {
+    const i = answer.indexOf(marker);
+    if (i !== -1 && i < cutIdx) {
+      cutIdx = i;
+    }
+  }
+
+  if (cutIdx !== answer.length) {
+    answer = answer.slice(0, cutIdx).trim();
   }
 
   if (!answer) {
@@ -136,7 +146,6 @@ function extractAssistantAnswer(userMsg: string, completion: string): string {
   }
   return cleanAnswer(answer);
 }
-
 async function trainLut(
   lutName: string,
   label: string,

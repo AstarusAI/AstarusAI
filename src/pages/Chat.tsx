@@ -44,7 +44,7 @@ type PretrainedLutConfig = {
 const PRETRAINED_LUTS: PretrainedLutConfig[] = [
   {
     label: "Astarus AI demo",
-    lutName: "demo-9eb289ff",
+    lutName: "demo-f0d18034",
     blocks: [-1, -4, -9],
     residualMap: {
       "-1": 0.25,

@@ -200,7 +200,7 @@ async function generateFromApi(
     threshold,
     residuals,
     wnn_blocks: wnnBlocks,
-    cost_scale: 3,
+    cost_scale: 1,
   };
 
   console.log("POST /generate payload:", payload);

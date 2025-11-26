@@ -5,11 +5,12 @@ import path from "path";
 // https://vitejs.dev/config/
 export default defineConfig({
   server: {
-    host: "::",
-    port: 8080,
+    host: "0.0.0.0",
+    port: 5000,
+    allowedHosts: true,
   },
   preview: {
-    allowedHosts: ["astarusai.onrender.com", "astarus.ai"],
+    allowedHosts: true,
   },
   plugins: [
     react(),
@@ -17,6 +18,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "@assets": path.resolve(__dirname, "./src/assets"),
     },
   },
 });

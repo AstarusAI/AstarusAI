@@ -1,63 +1,56 @@
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { ArrowRight, Mail } from "lucide-react";
+import { ArrowRight, Sparkles, Play } from "lucide-react";
 import { motion } from "framer-motion";
-import { fadeIn, fadeInUp, scaleOnHover } from "@/lib/motion";
+import { fadeIn, fadeInUp } from "@/lib/motion";
 import { Link } from "react-router-dom";
 
 export const CTA = () => {
   return (
     <motion.section
-      className="py-24 px-4 relative overflow-hidden bg-white"
+      className="relative py-24 px-4 overflow-hidden"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.2 }}
       variants={fadeIn()}
     >
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-secondary rounded-full blur-3xl"></div>
+      <div className="absolute inset-0 bg-gradient-primary" />
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-white/30 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-white/20 rounded-full blur-3xl" />
       </div>
+
       <div className="container relative z-10">
         <motion.div
+          className="max-w-3xl mx-auto text-center"
           variants={fadeInUp(0.1)}
-          whileHover={{ scale: 1.01 }}
-          transition={{ duration: 0.3 }}
         >
-          <Card className="max-w-4xl mx-auto p-12 bg-white border-2 border-primary/20 shadow-2xl relative overflow-hidden group">
-            <div className="text-center space-y-8 relative z-10">
-              <div className="inline-block px-4 py-2 rounded-full bg-primary/5 border-2 border-primary/20 mb-2">
-                <span className="text-sm font-semibold text-primary">Get Involved</span>
-              </div>
-              <h2 className="text-4xl md:text-5xl font-bold text-foreground">Ready to Learn More?</h2>
-              <p className="text-xl text-gray-700 max-w-2xl mx-auto leading-relaxed font-medium">
-                We're currently in stealth mode and seeking strategic partners and investors. Join us in building the future of continuously learning AI.
-              </p>
+          <div className="w-20 h-20 rounded-2xl bg-white/10 backdrop-blur-sm mx-auto mb-8 flex items-center justify-center">
+            <Sparkles className="w-10 h-10 text-white" />
+          </div>
 
-              <motion.div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4" variants={fadeInUp(0.2)}>
-                <Link to="/contact">
-                  <Button size="lg" className="group bg-primary text-white font-semibold px-8 py-6 rounded-lg shadow-xl hover:bg-primary/90 hover:scale-105 transition-all duration-300">
-                    <span className="flex items-center gap-2">
-                      <Mail className="w-5 h-5" />
-                      Contact for Investment
-                      <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                    </span>
-                  </Button>
-                </Link>
-                <Link to="/technology">
-                  <Button size="lg" className="group relative bg-white border-2 border-secondary/30 text-gray-900 font-semibold px-8 py-6 rounded-lg shadow-xl hover:bg-secondary/5 hover:scale-105 transition-all duration-300 hover:border-secondary/50">
-                    <span className="relative z-10">Request Technical Brief</span>
-                  </Button>
-                </Link>
-              </motion.div>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6">
+            Ready to Experience the Future of AI?
+          </h2>
+          
+          <p className="text-lg sm:text-xl text-white/80 mb-10 max-w-xl mx-auto">
+            Try our interactive demo and see how memory-augmented transformers 
+            enable real-time learning and personalization.
+          </p>
 
-              <motion.div className="pt-8 border-t border-gray-200" variants={fadeInUp(0.3)}>
-                <p className="text-sm text-gray-600 font-medium">
-                  For partnership inquiries, technical questions, or investor relations, reach out to us.
-                </p>
-              </motion.div>
-            </div>
-          </Card>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link to="/chat">
+              <Button className="bg-white text-primary hover:bg-white/90 font-semibold px-8 py-6 h-auto text-base shadow-lg group">
+                <Play className="w-5 h-5 mr-2" />
+                Try Demo Now
+                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </Link>
+            <Link to="/contact">
+              <Button className="bg-white/10 border-2 border-white/30 text-white hover:bg-white/20 font-semibold px-8 py-6 h-auto text-base backdrop-blur-sm">
+                Contact Sales
+              </Button>
+            </Link>
+          </div>
         </motion.div>
       </div>
     </motion.section>

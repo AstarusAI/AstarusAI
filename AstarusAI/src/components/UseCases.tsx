@@ -1,7 +1,9 @@
 import { Card } from "@/components/ui/card";
-import { Users, Building2, GraduationCap, Briefcase } from "lucide-react";
+import { Users, Building2, GraduationCap, Briefcase, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
-import { fadeIn, fadeInUp, staggerContainer, scaleOnHover } from "@/lib/motion";
+import { fadeIn, fadeInUp, staggerContainer } from "@/lib/motion";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 const useCases = [
   {
@@ -9,108 +11,118 @@ const useCases = [
     title: "Personalized AI Assistants",
     description: "Consumer models that remember user preferences, tone, and past decisions — creating truly personalized experiences without privacy concerns.",
     examples: ["Custom GPTs", "Personal productivity tools", "Content creators"],
+    color: "primary",
   },
   {
     icon: Building2,
     title: "Enterprise Adoption",
     description: "Companies can inject firm-specific knowledge, style guides, and domain expertise directly into model behavior.",
     examples: ["Legal firms", "Financial analysts", "Medical professionals"],
+    color: "secondary",
   },
   {
     icon: GraduationCap,
     title: "Adaptive Learning Systems",
     description: "Educational AI that continuously adapts to individual student learning patterns and knowledge gaps.",
     examples: ["AI tutors", "Training platforms", "Skill development"],
+    color: "primary",
   },
   {
     icon: Briefcase,
     title: "Operational Intelligence",
     description: "Models that improve at routine business tasks through accumulated corrections and organizational knowledge.",
     examples: ["Email automation", "Code generation", "Document summarization"],
+    color: "secondary",
   },
 ];
 
 export const UseCases = () => {
   return (
     <motion.section
-      className="py-12 sm:py-16 md:py-24 px-4 bg-white"
+      className="relative py-24 px-4 bg-gradient-to-b from-muted/30 to-white overflow-hidden"
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, amount: 0.2 }}
+      viewport={{ once: true, amount: 0.1 }}
       variants={fadeIn()}
     >
-      <div className="container">
+      <div className="absolute inset-0 bg-mesh-gradient opacity-30" />
+
+      <div className="container relative z-10">
         <motion.div
-          className="max-w-3xl mx-auto text-center mb-16 space-y-4"
+          className="max-w-3xl mx-auto text-center mb-16 space-y-6"
           variants={fadeInUp(0.1)}
         >
-          <div className="inline-block px-4 py-2 rounded-full bg-secondary/5 border-2 border-secondary/20 mb-4">
-            <span className="text-sm font-semibold text-secondary">Real-World Impact</span>
+          <div className="section-badge mx-auto">
+            <Briefcase className="w-4 h-4 text-secondary" />
+            <span className="text-secondary">Real-World Impact</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground px-4">Transformative Applications</h2>
-          <p className="text-base sm:text-lg md:text-xl text-gray-700 font-medium leading-relaxed px-4">
-            Enable use cases that were previously impossible or economically unfeasible.
+          
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-foreground">
+            Transformative{" "}
+            <span className="text-gradient-secondary">Applications</span>
+          </h2>
+          
+          <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
+            Enable use cases that were previously impossible or economically unfeasible 
+            with traditional approaches.
           </p>
         </motion.div>
 
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto"
-          variants={staggerContainer(0.2, 0.2)}
+          className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 max-w-6xl mx-auto"
+          variants={staggerContainer(0.1, 0.1)}
         >
           {useCases.map((useCase, index) => {
             const Icon = useCase.icon;
+            const isPrimary = useCase.color === "primary";
+            
             return (
               <motion.div
                 key={index}
-                variants={fadeInUp(index * 0.05)}
-                whileHover={scaleOnHover.whileHover}
-                whileTap={scaleOnHover.whileTap}
-                transition={scaleOnHover.transition}
+                variants={fadeInUp(index * 0.1)}
+                whileHover={{ y: -8 }}
+                transition={{ duration: 0.3 }}
               >
-                <Card
-                  className={`p-6 sm:p-8 border-2 card-hover group relative overflow-hidden ${
-                    index % 2 === 0 ? 'bg-primary/5 border-primary/20' : 'bg-secondary/5 border-secondary/20'
-                  }`}
-                >
-                  <div className="relative space-y-4 sm:space-y-6">
-                    <div className="flex items-start gap-3 sm:gap-4">
-                      <motion.div
-                        className={`w-12 h-12 sm:w-16 sm:h-16 rounded-xl flex items-center justify-center flex-shrink-0 border-2 shadow-lg ${
-                          index % 2 === 0 
-                            ? 'bg-primary/5 border-primary/20' 
-                            : 'bg-secondary/5 border-secondary/20'
-                        }`}
-                        whileHover={{ scale: 1.1, rotate: 5 }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <Icon
-                          className={`w-6 h-6 sm:w-8 sm:h-8 ${
-                            index % 2 === 0 ? 'text-primary' : 'text-secondary'
-                          }`}
-                        />
-                      </motion.div>
-                      <div className="flex-1">
-                        <h3 className={`text-xl sm:text-2xl font-bold text-gray-900 mb-2 group-hover:${
-                          index % 2 === 0 ? 'text-primary' : 'text-secondary'
-                        } transition-colors`}>{useCase.title}</h3>
+                <Card className="group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 h-full bg-white">
+                  <div className="absolute top-0 right-0 w-32 h-32 opacity-5">
+                    <Icon className={`w-full h-full ${isPrimary ? "text-primary" : "text-secondary"}`} />
+                  </div>
+
+                  <div className="p-8 relative z-10">
+                    <div className="flex items-start gap-5 mb-5">
+                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:shadow-xl ${
+                        isPrimary ? "bg-gradient-primary" : "bg-gradient-secondary"
+                      }`}>
+                        <Icon className="w-7 h-7 text-white" />
                       </div>
+                      
+                      <h3 className={`text-xl sm:text-2xl font-bold flex-1 pt-2 transition-colors duration-300 ${
+                        isPrimary ? "group-hover:text-primary" : "group-hover:text-secondary"
+                      }`}>
+                        {useCase.title}
+                      </h3>
                     </div>
-                    <p className="text-sm sm:text-base text-gray-700 leading-relaxed font-medium">{useCase.description}</p>
-                    <div className="pt-2">
-                      <div className={`text-sm font-bold mb-3 ${
-                        index % 2 === 0 ? 'text-primary' : 'text-secondary'
-                      }`}>Key Applications:</div>
+
+                    <p className="text-muted-foreground leading-relaxed mb-6">
+                      {useCase.description}
+                    </p>
+
+                    <div className="space-y-3">
+                      <p className={`text-xs font-semibold uppercase tracking-wider ${
+                        isPrimary ? "text-primary" : "text-secondary"
+                      }`}>
+                        Key Applications
+                      </p>
                       <div className="flex flex-wrap gap-2">
                         {useCase.examples.map((example, idx) => (
                           <motion.span
                             key={idx}
-                            className={`px-3 py-1.5 rounded-full text-sm font-medium border-2 ${
-                              index % 2 === 0
-                                ? 'bg-primary/5 border-primary/20 text-primary'
-                                : 'bg-secondary/5 border-secondary/20 text-secondary'
+                            className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-all duration-200 ${
+                              isPrimary
+                                ? "bg-primary/5 border-primary/20 text-primary hover:bg-primary/10"
+                                : "bg-secondary/5 border-secondary/20 text-secondary hover:bg-secondary/10"
                             }`}
                             whileHover={{ scale: 1.05 }}
-                            transition={{ duration: 0.2 }}
                           >
                             {example}
                           </motion.span>
@@ -118,10 +130,26 @@ export const UseCases = () => {
                       </div>
                     </div>
                   </div>
+
+                  <div className={`absolute bottom-0 left-0 right-0 h-1 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left ${
+                    isPrimary ? "bg-gradient-primary" : "bg-gradient-secondary"
+                  }`} />
                 </Card>
               </motion.div>
             );
           })}
+        </motion.div>
+
+        <motion.div
+          className="text-center mt-16"
+          variants={fadeInUp(0.4)}
+        >
+          <Link to="/investors">
+            <Button className="cta-button group">
+              <span>Explore Investment Opportunities</span>
+              <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+            </Button>
+          </Link>
         </motion.div>
       </div>
     </motion.section>

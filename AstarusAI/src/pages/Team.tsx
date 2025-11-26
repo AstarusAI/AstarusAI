@@ -1,103 +1,206 @@
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Card } from "@/components/ui/card";
-import { Linkedin, Mail } from "lucide-react";
-import teamPhoto from "@/assets/team-photo.jpg";
+import { Button } from "@/components/ui/button";
+import { Linkedin, Mail, Users, ArrowRight, Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
+import { fadeIn, fadeInUp, staggerContainer } from "@/lib/motion";
+import { Link } from "react-router-dom";
+
+const teamMembers = [
+  {
+    name: "Rafayel",
+    role: "Founder & CEO",
+    image: "/CEO Pic.jpeg",
+    bio: "AI researcher with a focus on continuous learning architectures. Leading the development of memory-augmented transformers.",
+    linkedin: "https://www.linkedin.com/in/rafayel-latif-490aa724a/",
+    email: "rafayel.latif@gmail.com",
+    color: "primary",
+  },
+  {
+    name: "Alfred",
+    role: "Business Development",
+    initials: "A",
+    bio: "Focused on investor relations, funding strategy, and strategic partnerships to accelerate Astarus's growth.",
+    linkedin: "https://www.linkedin.com/in/alfred-mulinge-7586582a9/",
+    email: "binfred.ke@gmail.com",
+    color: "secondary",
+  },
+];
 
 export default function Team() {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <Navbar />
-      
-      {/* Hero Section */}
-      <section className="relative pt-16 sm:pt-20 md:pt-28 lg:pt-32 pb-8 sm:pb-12 md:pb-16 lg:pb-20 px-4">
-        <div className="container">
-          <div className="max-w-4xl mx-auto text-center space-y-4 sm:space-y-6 animate-fade-in">
-            <h1 className="text-primary text-3xl sm:text-4xl md:text-5xl lg:text-6xl">Meet Our Team</h1>
-            <p className="text-base sm:text-lg md:text-xl text-muted-foreground px-4">
-              A passionate group of AI researchers and engineers pushing the boundaries of machine learning
+
+      <motion.section
+        className="relative pt-28 pb-16 px-4 overflow-hidden"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+        variants={fadeIn()}
+      >
+        <div className="absolute inset-0 bg-mesh-gradient opacity-50" />
+        <div className="absolute top-20 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-secondary/10 rounded-full blur-3xl" />
+
+        <div className="container relative z-10 max-w-4xl mx-auto text-center">
+          <motion.div variants={fadeInUp(0.1)} className="space-y-6">
+            <div className="section-badge mx-auto">
+              <Users className="w-4 h-4 text-primary" />
+              <span className="text-primary">Our Team</span>
+            </div>
+
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold">
+              <span className="text-foreground">Meet the </span>
+              <span className="text-gradient">Pioneers</span>
+            </h1>
+
+            <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
+              A passionate group of AI researchers and engineers pushing 
+              the boundaries of machine learning.
             </p>
-          </div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
-      {/* Team Members */}
-      <section className="py-8 sm:py-12 md:py-16 lg:py-20 px-4">
+      <motion.section
+        className="py-20 px-4"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.1 }}
+        variants={fadeIn()}
+      >
         <div className="container">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-6xl mx-auto">
-            {/* Founder/CEO */}
-            <Card className="p-5 sm:p-6 card-hover border-2 border-primary/20">
-              <div className="space-y-3 sm:space-y-4">
-                <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 rounded-full overflow-hidden mx-auto border-2 md:border-4 border-primary">
-                  <img 
-                    src="/CEO Pic.jpeg" 
-                    alt="Rafayel - Founder & CEO" 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="text-center">
-                  <h3 className="text-lg sm:text-xl font-bold text-foreground">Rafayel</h3>
-                  <p className="text-sm sm:text-base text-primary font-semibold">Founder & CEO</p>
-                </div>
-                <p className="text-xs sm:text-sm text-muted-foreground text-center leading-relaxed">
-                  AI researcher with a focus on continuous learning architectures. Leading the development of memory-augmented transformers.
-                </p>
-                <div className="flex justify-center gap-4 pt-2">
-                  <a href="https://www.linkedin.com/in/rafayel-latif-490aa724a/" className="text-muted-foreground hover:text-primary transition-colors" aria-label="Rafayel on LinkedIn">
-                    <Linkedin className="w-5 h-5" />
-                  </a>
-                  <a href="mailto:rafayel.latif@gmail.com" className="text-muted-foreground hover:text-primary transition-colors" aria-label="Email Rafayel">
-                    <Mail className="w-5 h-5" />
-                  </a>
-                </div>
-              </div>
-            </Card>
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto"
+            variants={staggerContainer(0.15, 0.1)}
+          >
+            {teamMembers.map((member, index) => {
+              const isPrimary = member.color === "primary";
+              return (
+                <motion.div
+                  key={index}
+                  variants={fadeInUp(index * 0.1)}
+                  whileHover={{ y: -8 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Card className={`p-8 border-0 shadow-lg hover:shadow-2xl transition-all duration-500 h-full group ${
+                    isPrimary 
+                      ? "bg-gradient-to-br from-primary/5 to-primary/10" 
+                      : "bg-gradient-to-br from-secondary/5 to-secondary/10"
+                  }`}>
+                    <div className="text-center space-y-5">
+                      <div className="relative inline-block">
+                        {member.image ? (
+                          <div className={`w-32 h-32 rounded-2xl overflow-hidden mx-auto border-4 shadow-xl group-hover:scale-105 transition-transform duration-300 ${
+                            isPrimary ? "border-primary/30" : "border-secondary/30"
+                          }`}>
+                            <img
+                              src={member.image}
+                              alt={member.name}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        ) : (
+                          <div className={`w-32 h-32 rounded-2xl mx-auto flex items-center justify-center text-4xl font-bold text-white shadow-xl group-hover:scale-105 transition-transform duration-300 ${
+                            isPrimary ? "bg-gradient-primary" : "bg-gradient-secondary"
+                          }`}>
+                            {member.initials}
+                          </div>
+                        )}
+                        <div className={`absolute -bottom-2 -right-2 w-10 h-10 rounded-xl flex items-center justify-center shadow-lg ${
+                          isPrimary ? "bg-gradient-primary" : "bg-gradient-secondary"
+                        }`}>
+                          <Sparkles className="w-5 h-5 text-white" />
+                        </div>
+                      </div>
 
-            {/* CTO */}
-            <Card className="p-5 sm:p-6 card-hover border-2 border-secondary/20">
-              <div className="space-y-3 sm:space-y-4">
-                <div className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 rounded-full bg-secondary flex items-center justify-center text-2xl sm:text-3xl md:text-4xl font-bold text-white mx-auto">
-                  A
-                </div>
-                <div className="text-center">
-                  <h3 className="text-lg sm:text-xl font-bold text-foreground">Alfred</h3>
-                  <p className="text-sm sm:text-base text-secondary font-semibold">Business Development</p>
-                </div>
-                <p className="text-xs sm:text-sm text-muted-foreground text-center leading-relaxed">
-                  Focused on investor relations, funding strategy, and strategic partnerships to accelerate Astarus's growth.
-                </p>
-                <div className="flex justify-center gap-4 pt-2">
-                  <a href="https://www.linkedin.com/in/alfred-mulinge-7586582a9/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-secondary transition-colors" aria-label="Alfred on LinkedIn">
-                    <Linkedin className="w-5 h-5" />
-                  </a>
-                  <a href="mailto:binfred.ke@gmail.com" className="text-muted-foreground hover:text-secondary transition-colors" aria-label="Email Alfred">
-                    <Mail className="w-5 h-5" />
-                  </a>
-                </div>
-              </div>
-            </Card>
+                      <div>
+                        <h3 className="text-2xl font-bold text-foreground">{member.name}</h3>
+                        <p className={`font-semibold ${isPrimary ? "text-primary" : "text-secondary"}`}>
+                          {member.role}
+                        </p>
+                      </div>
 
-          </div>
+                      <p className="text-muted-foreground leading-relaxed">
+                        {member.bio}
+                      </p>
+
+                      <div className="flex justify-center gap-3 pt-2">
+                        <a
+                          href={member.linkedin}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${
+                            isPrimary 
+                              ? "bg-primary/10 text-primary hover:bg-primary hover:text-white" 
+                              : "bg-secondary/10 text-secondary hover:bg-secondary hover:text-white"
+                          }`}
+                        >
+                          <Linkedin className="w-5 h-5" />
+                        </a>
+                        <a
+                          href={`mailto:${member.email}`}
+                          className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${
+                            isPrimary 
+                              ? "bg-primary/10 text-primary hover:bg-primary hover:text-white" 
+                              : "bg-secondary/10 text-secondary hover:bg-secondary hover:text-white"
+                          }`}
+                        >
+                          <Mail className="w-5 h-5" />
+                        </a>
+                      </div>
+                    </div>
+                  </Card>
+                </motion.div>
+              );
+            })}
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
-      {/* Join Us Section */}
-      <section className="py-8 sm:py-12 md:py-16 lg:py-20 px-4 bg-muted/30">
+      <motion.section
+        className="py-20 px-4 bg-gradient-dark"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+        variants={fadeIn()}
+      >
         <div className="container">
-          <Card className="max-w-4xl mx-auto p-6 sm:p-8 md:p-10 lg:p-12 text-center">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl text-foreground mb-4 sm:mb-6">Join Our Team</h2>
-            <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8 px-4">
-              We're always looking for talented individuals who are passionate about pushing the boundaries of AI research.
+          <motion.div
+            className="max-w-3xl mx-auto text-center"
+            variants={fadeInUp(0.1)}
+          >
+            <div className="w-20 h-20 rounded-2xl bg-gradient-primary mx-auto mb-8 flex items-center justify-center shadow-lg glow-primary">
+              <Users className="w-10 h-10 text-white" />
+            </div>
+
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6">
+              Join Our Team
+            </h2>
+            
+            <p className="text-lg text-white/70 mb-8 max-w-xl mx-auto">
+              We're always looking for talented individuals who are passionate 
+              about pushing the boundaries of AI research and development.
             </p>
-            <a 
-              href="/contact" 
-              className="inline-block px-6 sm:px-8 py-2.5 sm:py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-colors text-sm sm:text-base"
-            >
-              View Open Positions
-            </a>
-          </Card>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link to="/contact">
+                <Button className="cta-button group">
+                  <span>View Open Positions</span>
+                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+              <Link to="/technology">
+                <Button className="cta-button-secondary bg-white/10 border-white/20 text-white hover:bg-white/20">
+                  Learn About Our Tech
+                </Button>
+              </Link>
+            </div>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
       <Footer />
     </div>

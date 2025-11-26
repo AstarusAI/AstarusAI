@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Card } from "@/components/ui/card";
@@ -6,20 +6,28 @@ import { Button } from "@/components/ui/button";
 import {
   Rocket,
   Sliders,
-  Database,
   MessageCircle,
   Sparkles,
   ArrowRight,
   RefreshCw,
-  X,
+  Send,
+  Bot,
+  User,
+  Zap,
+  Brain,
+  Settings2,
+  ChevronDown,
+  Plus,
+  Trash2,
+  Info,
+  Check,
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { fadeIn, fadeInUp, staggerContainer } from "@/lib/motion";
 
 const BASE_URL = "https://dhzzxfr41qjcz7-8000.proxy.runpod.net";
 const MODEL = "mistral";
 
-// Types
 type Message = {
   id: string;
   role: "user" | "assistant";
@@ -40,10 +48,9 @@ type PretrainedLutConfig = {
   readOnly?: boolean;
 };
 
-// Pre-trained LUT demos (dropdown)
 const PRETRAINED_LUTS: PretrainedLutConfig[] = [
   {
-    label: "Astarus AI demo",
+    label: "Astarus AI Demo",
     lutName: "demo-f0d18034",
     blocks: [-1, -4, -9],
     residualMap: {
@@ -53,22 +60,18 @@ const PRETRAINED_LUTS: PretrainedLutConfig[] = [
     },
     readOnly: true,
   },
-  // Add more pre-trained configs here later if you want
 ];
 
-// Any pre-trained marked readOnly is treated as protected
 const READ_ONLY_LUTS = PRETRAINED_LUTS.filter((p) => p.readOnly).map(
   (p) => p.lutName
 );
 
-// Defaults for *new* (non-pretrained) LUTs
 const DEFAULT_NEW_LUT_BLOCKS = [-1, -4];
 const DEFAULT_NEW_LUT_RESIDUALS: Record<string, number> = {
   "-1": 0.75,
   "-4": 0.25,
 };
 
-// Match the Python script defaults
 const DEFAULT_THRESHOLD = 0.25;
 const GEN_LENGTH = 128;
 
@@ -77,85 +80,61 @@ function generateLutName() {
   return `demo-${rand}`;
 }
 
-/**
- * Clean up raw assistant text
- */
 function cleanAnswer(raw: string): string {
   let text = raw;
-
-  // Strip obvious [INST] wrappers if they slip through
   text = text.replace(/\[INST\]/g, "").replace(/\[\/INST\]/g, "");
-
   text = text.replace(/^Assistant:\s*/i, "");
   text = text.replace(/\nAssistant:\s*/gi, "\n");
-
   const userIdx = text.indexOf("\nUser:");
   if (userIdx !== -1) {
     text = text.slice(0, userIdx);
   }
-
   const dotColonIdx = text.indexOf(".:");
   if (dotColonIdx !== -1) {
     text = text.slice(0, dotColonIdx + 1);
   }
-
   text = text.replace(/\n\./g, ".");
   text = text.replace(/\n{3,}/g, "\n\n");
-
   return text.trim();
 }
 
-/**
- * Mirror the Python extract_assistant_answer(user_msg, completion)
- */
 function extractAssistantAnswer(userMsg: string, completion: string): string {
   const patternUser = `User: ${userMsg}`;
   let text: string = completion;
-
-  // Scope down to the part after the specific "User: <msg>"
   const idxUser = completion.indexOf(patternUser);
   if (idxUser !== -1) {
     text = completion.slice(idxUser + patternUser.length);
   }
-
-  // Then find the first "Assistant:" after that
   const idxAssistant = text.indexOf("Assistant:");
   if (idxAssistant !== -1) {
     text = text.slice(idxAssistant + "Assistant:".length);
   }
-
   let answer = text.trim();
-
-  // Cut off at any of these markers: next [INST], next User:, or next Assistant:
   const cutMarkers = ["[INST]", "User:", "Assistant:"];
   let cutIdx = answer.length;
-
   for (const marker of cutMarkers) {
     const i = answer.indexOf(marker);
     if (i !== -1 && i < cutIdx) {
       cutIdx = i;
     }
   }
-
   if (cutIdx !== answer.length) {
     answer = answer.slice(0, cutIdx).trim();
   }
-
   if (!answer) {
     return cleanAnswer(completion.trim());
   }
   return cleanAnswer(answer);
 }
+
 async function trainLut(
   lutName: string,
   label: string,
   labelContext: string | null,
   wnnBlocks: number[]
 ) {
-
   const wrappedLabel = `[INST]${label}[/INST]`;
   const wrappedContext = labelContext ? `${labelContext}</s>` : null;
-
   const payload = {
     label: wrappedLabel,
     label_context: wrappedContext,
@@ -164,13 +143,11 @@ async function trainLut(
     wnn_blocks: wnnBlocks,
     sparsity: 1.0,
   };
-
   const res = await fetch(`${BASE_URL}/train_lut`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-
   const json = await res.json().catch(() => ({}));
   if (!res.ok) {
     throw new Error(
@@ -191,7 +168,6 @@ async function generateFromApi(
 ): Promise<GenerateResponse> {
   const basePrompt = `User: ${userMsg}\nAssistant:`;
   const prompt = `[INST]${basePrompt}[/INST]`;
-
   const payload = {
     prompt,
     length: GEN_LENGTH,
@@ -202,41 +178,38 @@ async function generateFromApi(
     wnn_blocks: wnnBlocks,
     cost_scale: 5,
   };
-
-  console.log("POST /generate payload:", payload);
-
   const res = await fetch(`${BASE_URL}/generate`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-
   const json = (await res.json().catch(() => ({}))) as GenerateResponse & {
     error?: string;
     detail?: string;
   };
-
   if (!res.ok) {
     throw new Error(json.error || json.detail || `Generate failed ${res.status}`);
   }
-
   return json;
 }
 
-
-// Use the first pre-trained LUT as the default (Astarus AI demo)
 const initialPretrained = PRETRAINED_LUTS[0];
+
+const suggestedQuestions = [
+  "What does Astarus AI do?",
+  "Who founded Astarus AI?",
+  "How does memory augmentation work?",
+  "What makes your technology unique?",
+];
 
 export default function LutDemo() {
   const [lutName, setLutName] = useState<string>(
     () => initialPretrained?.lutName ?? generateLutName()
   );
   const [lutInput, setLutInput] = useState<string>("");
-
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [threshold, setThreshold] = useState(DEFAULT_THRESHOLD);
-
   const [availableBlocks, setAvailableBlocks] = useState<number[]>(
     initialPretrained ? [...initialPretrained.blocks] : [...DEFAULT_NEW_LUT_BLOCKS]
   );
@@ -249,15 +222,15 @@ export default function LutDemo() {
       : { ...DEFAULT_NEW_LUT_RESIDUALS }
   );
   const [newBlockInput, setNewBlockInput] = useState("");
-
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isTrainingDocs, setIsTrainingDocs] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [teachOpen, setTeachOpen] = useState(false);
   const [teachQuestion, setTeachQuestion] = useState("");
   const [teachAnswer, setTeachAnswer] = useState("");
   const [lastResidualUsed, setLastResidualUsed] = useState<number | number[]>();
   const [lastThresholdUsed, setLastThresholdUsed] = useState<number>();
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const hasMessages = useMemo(() => messages.length > 0, [messages.length]);
   const isReadOnlyLut = useMemo(
@@ -265,17 +238,19 @@ export default function LutDemo() {
     [lutName]
   );
 
-  // Controlled value for the dropdown based on current lutName
   const selectedPretrainedValue = useMemo(() => {
     const cfg = PRETRAINED_LUTS.find((p) => p.lutName === lutName);
     return cfg?.lutName ?? "";
   }, [lutName]);
 
-  // Residual array aligned with active wnnBlocks
   const currentResiduals = useMemo(
     () => wnnBlocks.map((b) => residualMap[String(b)] ?? 1.0),
     [wnnBlocks, residualMap]
   );
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const resetCommonState = (label?: string) => {
     setMessages([]);
@@ -289,12 +264,11 @@ export default function LutDemo() {
   };
 
   const applyPretrainedConfig = (config: PretrainedLutConfig) => {
-    // Copy arrays/objects so state is totally reset
     setLutName(config.lutName);
     setAvailableBlocks([...config.blocks]);
     setWnnBlocks([...config.blocks]);
     setResidualMap({ ...config.residualMap });
-    resetCommonState(`Switched to pre-trained LUT: ${config.label}`);
+    resetCommonState(`Switched to: ${config.label}`);
   };
 
   const switchToLut = (name: string) => {
@@ -303,7 +277,6 @@ export default function LutDemo() {
       applyPretrainedConfig(config);
       return;
     }
-
     setLutName(name);
     setAvailableBlocks([...DEFAULT_NEW_LUT_BLOCKS]);
     setWnnBlocks([...DEFAULT_NEW_LUT_BLOCKS]);
@@ -311,8 +284,8 @@ export default function LutDemo() {
     resetCommonState(`Switched to LUT: ${name}`);
   };
 
-  const handleSend = async () => {
-    const trimmed = input.trim();
+  const handleSend = async (customMessage?: string) => {
+    const trimmed = (customMessage || input).trim();
     if (!trimmed || isGenerating) return;
 
     const userMsg: Message = {
@@ -366,15 +339,11 @@ export default function LutDemo() {
     switchToLut(trimmed);
   };
 
-
   const handleTeach = async () => {
     if (isReadOnlyLut) {
-      setStatus(
-        "This LUT is a pre-trained demo. Create or load another LUT to teach custom Q&A."
-      );
+      setStatus("This is a pre-trained demo. Create a new LUT to teach custom knowledge.");
       return;
     }
-
     const q = teachQuestion.trim();
     const a = teachAnswer.trim();
     if (!q || !a) {
@@ -383,10 +352,10 @@ export default function LutDemo() {
     }
     const label_context = `User: ${q}\nAssistant: `;
     const label = a;
-    setStatus("Teaching custom Q&A to LUT...");
+    setStatus("Teaching custom knowledge...");
     try {
       await trainLut(lutName, label, label_context, wnnBlocks);
-      setStatus("✅ Stored this Q&A in the LUT. Future answers should reflect it.");
+      setStatus("Knowledge stored successfully! The model will now remember this.");
       setTeachQuestion("");
       setTeachAnswer("");
       setTeachOpen(false);
@@ -421,21 +390,17 @@ export default function LutDemo() {
 
   const handleAddBlock = () => {
     if (isReadOnlyLut) return;
-
     const trimmed = newBlockInput.trim();
     if (!trimmed) return;
-
     const parsed = parseInt(trimmed, 10);
     if (Number.isNaN(parsed)) {
-      setStatus("Please enter a valid integer for the LUT block index.");
+      setStatus("Please enter a valid integer for the block index.");
       return;
     }
-
     if (availableBlocks.includes(parsed)) {
-      setStatus("That LUT block already exists.");
+      setStatus("That block already exists.");
       return;
     }
-
     setAvailableBlocks((prev) => [...prev, parsed]);
     setWnnBlocks((prev) => [...prev, parsed]);
     setResidualMap((prev) => ({
@@ -446,550 +411,514 @@ export default function LutDemo() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/30">
       <Navbar />
 
-      {/* Hero Section */}
       <motion.section
-        className="relative pt-32 pb-20 px-4 overflow-hidden"
+        className="relative pt-28 pb-8 px-4 overflow-hidden"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
         variants={fadeIn()}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-background/10 via-background/40 to-background/90" />
+        <div className="absolute inset-0 bg-mesh-gradient opacity-50" />
+        <div className="absolute top-20 right-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-secondary/10 rounded-full blur-3xl" />
 
-        <div className="container relative z-10">
-          <motion.div
-            className="max-w-4xl mx-auto text-center space-y-6"
-            variants={fadeInUp(0.1)}
-          >
-            <h1 className="text-primary">LUT-LLM Interactive Demo</h1>
-            <p className="text-xl text-muted-foreground">
-              Play with a lookup-table augmented Mistral model. The default LUT
-              is pre-loaded with Astarus AI notes so you can start asking
-              questions immediately.
+        <div className="container relative z-10 max-w-4xl mx-auto text-center">
+          <motion.div variants={fadeInUp(0.1)} className="space-y-6">
+            <div className="section-badge mx-auto">
+              <Sparkles className="w-4 h-4 text-primary" />
+              <span className="text-primary">Interactive Demo</span>
+            </div>
+
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold">
+              <span className="text-foreground">Experience </span>
+              <span className="text-gradient">Memory-Augmented AI</span>
+            </h1>
+
+            <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
+              Chat with our LUT-enhanced Mistral model. The AI has been trained with Astarus-specific
+              knowledge that it can recall instantly without traditional fine-tuning.
             </p>
-            <div className="flex flex-wrap gap-3 justify-center text-sm text-muted-foreground">
-              <span className="px-3 py-1 rounded-full bg-background/60 border">
-                Model: <span className="font-mono">{MODEL}</span>
-              </span>
-              <span className="px-3 py-1 rounded-full bg-background/60 border flex items-center gap-2">
-                LUT name:{" "}
-                <span className="font-mono text-primary">{lutName}</span>
+
+            <div className="flex flex-wrap items-center justify-center gap-4 text-sm">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-card border shadow-sm">
+                <Brain className="w-4 h-4 text-primary" />
+                <span className="text-muted-foreground">Model: </span>
+                <span className="font-semibold text-foreground">{MODEL}</span>
+              </div>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-card border shadow-sm">
+                <Zap className="w-4 h-4 text-secondary" />
+                <span className="text-muted-foreground">LUT: </span>
+                <span className="font-mono font-semibold text-foreground">{lutName}</span>
                 {isReadOnlyLut && (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/30">
-                    pre-trained demo
+                  <span className="px-2 py-0.5 text-xs rounded-full bg-primary/10 text-primary border border-primary/20">
+                    Demo
                   </span>
                 )}
-              </span>
+              </div>
             </div>
           </motion.div>
         </div>
       </motion.section>
 
-      {/* Main Demo Section */}
       <motion.section
-        className="py-16 px-4"
+        className="py-8 px-4"
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, amount: 0.2 }}
+        viewport={{ once: true, amount: 0.1 }}
         variants={fadeIn()}
       >
-        <div className="container max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Chat + Status */}
-          <motion.div
-            className="lg:col-span-2 space-y-4"
-            variants={staggerContainer(0.1, 0.05)}
-          >
-            <motion.div variants={fadeInUp(0.1)}>
-              <Card className="p-6 h-[520px] flex flex-col bg-background/80 border-primary/20">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <MessageCircle className="w-5 h-5 text-primary" />
-                    <h2 className="text-lg font-semibold text-foreground">
-                      Chat with your personalized model
-                    </h2>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    {lastThresholdUsed !== undefined && (
-                      <span>
-                        Thresh used:{" "}
-                        <span className="font-mono">
-                          {lastThresholdUsed.toFixed(2)}
-                        </span>
-                      </span>
-                    )}
-                    {lastResidualUsed !== undefined && (
-                      <span>
-                        Residual used:{" "}
-                        <span className="font-mono">
-                          {Array.isArray(lastResidualUsed)
-                            ? lastResidualUsed.join(", ")
-                            : lastResidualUsed}
-                        </span>
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex-1 overflow-y-auto space-y-4 pr-1">
-                  {!hasMessages && (
-                    <div className="text-sm text-muted-foreground">
-                      <p className="mb-2">Try asking things like:</p>
-                      <ul className="list-disc list-inside space-y-1">
-                        <li>“What does Astarus AI do?”</li>
-                        <li>“Who founded Astarus AI?”</li>
-                        <li>“Explain Astarus AI in 3-4 sentences.”</li>
-                      </ul>
-                      <p className="mt-3">
-                        Or create/load another LUT on the right to train your
-                        own memories.
-                      </p>
-                    </div>
-                  )}
-
-                  {messages.map((m) => (
-                    <div
-                      key={m.id}
-                      className={`flex ${
-                        m.role === "user" ? "justify-end" : "justify-start"
-                      }`}
-                    >
-                      <div
-                        className={`max-w-[80%] rounded-2xl px-4 py-2 text-sm whitespace-pre-wrap ${
-                          m.role === "user"
-                            ? "bg-primary text-primary-foreground rounded-br-sm"
-                            : "bg-muted text-foreground rounded-bl-sm"
-                        }`}
-                      >
-                        {m.content}
+        <div className="container max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <motion.div
+              className="lg:col-span-2"
+              variants={fadeInUp(0.1)}
+            >
+              <Card className="overflow-hidden border-0 shadow-xl bg-card/80 backdrop-blur-sm">
+                <div className="p-4 sm:p-6 border-b bg-gradient-to-r from-primary/5 via-transparent to-secondary/5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center shadow-lg">
+                        <MessageCircle className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h2 className="font-bold text-foreground">AI Chat</h2>
+                        <p className="text-sm text-muted-foreground">Powered by Memory-Augmented LUT</p>
                       </div>
                     </div>
-                  ))}
+                    <div className="flex items-center gap-2">
+                      {lastThresholdUsed !== undefined && (
+                        <span className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground">
+                          Threshold: {lastThresholdUsed.toFixed(2)}
+                        </span>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setMessages([])}
+                        className="h-8 w-8"
+                      >
+                        <RefreshCw className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="mt-4 space-y-2">
-                  <div className="flex gap-2">
-                    <textarea
-                      className="flex-1 resize-none rounded-xl border bg-background/80 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/60"
-                      rows={2}
-                      placeholder="Type a question for the model..."
-                      value={input}
-                      onChange={(e) => setInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" && !e.shiftKey) {
-                          e.preventDefault();
-                          handleSend();
-                        }
-                      }}
-                    />
+                <div className="h-[400px] sm:h-[480px] overflow-y-auto p-4 sm:p-6 space-y-4">
+                  {!hasMessages ? (
+                    <div className="h-full flex flex-col items-center justify-center text-center px-4">
+                      <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center mb-6">
+                        <Bot className="w-10 h-10 text-primary" />
+                      </div>
+                      <h3 className="text-xl font-bold text-foreground mb-2">Start a Conversation</h3>
+                      <p className="text-muted-foreground mb-6 max-w-md">
+                        Ask me about Astarus AI, our technology, or try teaching me something new.
+                      </p>
+                      <div className="flex flex-wrap justify-center gap-2">
+                        {suggestedQuestions.map((q, i) => (
+                          <button
+                            key={i}
+                            onClick={() => handleSend(q)}
+                            className="px-4 py-2 text-sm rounded-full bg-muted hover:bg-primary/10 hover:text-primary transition-all duration-200 border hover:border-primary/30"
+                          >
+                            {q}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <AnimatePresence mode="popLayout">
+                      {messages.map((m) => (
+                        <motion.div
+                          key={m.id}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -20 }}
+                          className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
+                        >
+                          <div className={`flex items-start gap-3 max-w-[85%] ${m.role === "user" ? "flex-row-reverse" : ""}`}>
+                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                              m.role === "user"
+                                ? "bg-gradient-primary text-white"
+                                : "bg-muted text-muted-foreground"
+                            }`}>
+                              {m.role === "user" ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+                            </div>
+                            <div
+                              className={`rounded-2xl px-4 py-3 text-sm whitespace-pre-wrap ${
+                                m.role === "user"
+                                  ? "chat-bubble-user text-white"
+                                  : "chat-bubble-ai text-foreground"
+                              }`}
+                            >
+                              {m.content}
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
+                  )}
+
+                  {isGenerating && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex justify-start"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-xl bg-muted flex items-center justify-center">
+                          <Bot className="w-4 h-4 text-muted-foreground" />
+                        </div>
+                        <div className="chat-bubble-ai px-4 py-3">
+                          <div className="typing-indicator">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                  <div ref={messagesEndRef} />
+                </div>
+
+                <div className="p-4 sm:p-6 border-t bg-gradient-to-r from-transparent via-muted/30 to-transparent">
+                  {status && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className={`mb-3 px-4 py-2 rounded-lg text-sm ${
+                        status.includes("success") || status.includes("stored")
+                          ? "bg-green-50 text-green-700 border border-green-200"
+                          : "bg-amber-50 text-amber-700 border border-amber-200"
+                      }`}
+                    >
+                      {status}
+                    </motion.div>
+                  )}
+                  <div className="flex gap-3">
+                    <div className="flex-1 relative">
+                      <textarea
+                        className="w-full resize-none rounded-xl border-2 border-muted bg-background px-4 py-3 pr-12 text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 transition-all"
+                        rows={2}
+                        placeholder="Ask something about Astarus AI..."
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSend();
+                          }
+                        }}
+                      />
+                    </div>
                     <Button
-                      onClick={handleSend}
+                      onClick={() => handleSend()}
                       disabled={isGenerating || !input.trim()}
-                      className="self-end h-9 w-24 flex items-center justify-center"
+                      className="h-auto px-6 bg-gradient-primary hover:opacity-90 text-white shadow-lg shadow-primary/25"
                     >
                       {isGenerating ? (
-                        <div className="flex items-center gap-2">
-                          <RefreshCw className="w-4 h-4 animate-spin" />
-                          <span>Thinking</span>
-                        </div>
+                        <RefreshCw className="w-5 h-5 animate-spin" />
                       ) : (
-                        <div className="flex items-center gap-1">
-                          <span>Send</span>
-                          <ArrowRight className="w-4 h-4" />
-                        </div>
+                        <Send className="w-5 h-5" />
                       )}
                     </Button>
                   </div>
-                  {status && (
-                    <p className="text-xs text-muted-foreground">{status}</p>
-                  )}
                 </div>
               </Card>
             </motion.div>
-          </motion.div>
 
-          {/* Controls / Teaching / Docs */}
-          <motion.div
-            className="space-y-6"
-            variants={staggerContainer(0.15, 0.07)}
-          >
-            {/* Controls */}
-            <motion.div variants={fadeInUp(0.1)}>
-              <Card className="p-5 space-y-4">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <Sliders className="w-5 h-5 text-primary" />
-                    <h3 className="font-semibold text-foreground">
-                      LUT Controls
-                    </h3>
-                  </div>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-8 w-8"
-                    onClick={handleNewLut}
-                    title="Create a new random LUT"
-                  >
-                    <RefreshCw className="w-4 h-4" />
-                  </Button>
-                </div>
-
-                {/* Pre-trained demos dropdown (controlled by lutName) */}
-                {PRETRAINED_LUTS.length > 0 && (
-                  <div className="space-y-1 text-xs mb-2">
-                    <label className="text-muted-foreground">
-                      Pre-trained demos
-                    </label>
-                    <select
-                      className="w-full rounded-lg border bg-background/80 px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-primary/60"
-                      value={selectedPretrainedValue}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        const config = PRETRAINED_LUTS.find(
-                          (p) => p.lutName === val
-                        );
-                        if (config) applyPretrainedConfig(config);
-                      }}
+            <motion.div
+              className="space-y-4"
+              variants={staggerContainer(0.1, 0.05)}
+            >
+              <motion.div variants={fadeInUp(0.1)}>
+                <Card className="p-5 border-0 shadow-lg bg-card/80 backdrop-blur-sm">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center">
+                        <Settings2 className="w-4 h-4 text-white" />
+                      </div>
+                      <h3 className="font-bold text-foreground">LUT Controls</h3>
+                    </div>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-8 w-8"
+                      onClick={handleNewLut}
+                      title="Create new LUT"
                     >
-                      <option value="">None / custom</option>
-                      {PRETRAINED_LUTS.map((p) => (
-                        <option key={p.lutName} value={p.lutName}>
-                          {p.label} ({p.lutName})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-
-                {/* Load / switch LUT by name */}
-                <div className="space-y-2 text-xs">
-                  <label className="text-muted-foreground">
-                    Load or switch LUT by name
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      className="flex-1 rounded-lg border bg-background/80 px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-primary/60"
-                      placeholder="e.g. demo-myteam123"
-                      value={lutInput}
-                      onChange={(e) => setLutInput(e.target.value)}
-                    />
-                    <Button size="sm" variant="outline" onClick={handleLoadLut}>
-                      Load
+                      <Plus className="w-4 h-4" />
                     </Button>
                   </div>
-                  {isReadOnlyLut && (
-                    <p className="text-[11px] text-amber-500">
-                      This LUT is a pre-trained Astarus demo. Create or load
-                      another LUT to train it.
-                    </p>
-                  )}
-                </div>
 
-                <div className="space-y-4 text-sm">
-                  <div>
-                    <div className="flex justify-between mb-1">
-                      <span className="text-muted-foreground">Threshold</span>
-                      <span className="font-mono text-xs">
-                        {threshold.toFixed(2)}
-                      </span>
-                    </div>
-                    <input
-                      type="range"
-                      min={0}
-                      max={1}
-                      step={0.05}
-                      value={threshold}
-                      onChange={(e) =>
-                        setThreshold(parseFloat(e.target.value || "0"))
-                      }
-                      className="w-full"
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      How often the LUT is allowed to speak at all.
-                    </p>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex justify-between mb-1">
-                      <span className="text-muted-foreground">
-                        WNN Blocks &amp; Residuals
-                      </span>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                        Pre-trained Models
+                      </label>
+                      <select
+                        className="w-full rounded-lg border-2 border-muted bg-background px-3 py-2.5 text-sm focus:outline-none focus:border-primary/50 transition-colors"
+                        value={selectedPretrainedValue}
+                        onChange={(e) => {
+                          const config = PRETRAINED_LUTS.find((p) => p.lutName === e.target.value);
+                          if (config) applyPretrainedConfig(config);
+                        }}
+                      >
+                        <option value="">Select a model...</option>
+                        {PRETRAINED_LUTS.map((p) => (
+                          <option key={p.lutName} value={p.lutName}>
+                            {p.label}
+                          </option>
+                        ))}
+                      </select>
                     </div>
 
-                    {availableBlocks.map((block) => {
-                      const enabled = wnnBlocks.includes(block);
-                      const residual =
-                        residualMap[String(block)] ??
-                        DEFAULT_NEW_LUT_RESIDUALS[String(block)] ??
-                        1.0;
-
-                      return (
-                        <div
-                          key={block}
-                          className="border rounded-lg px-3 py-2 space-y-1"
-                        >
-                          <div className="flex items-center justify-between">
-                            <label className="flex items-center gap-2 text-xs">
-                              <input
-                                type="checkbox"
-                                checked={enabled}
-                                onChange={() => toggleBlock(block)}
-                              />
-                              <span className="text-muted-foreground">
-                                Block {block}
-                              </span>
-                            </label>
-                            <div className="flex items-center gap-2">
-                              <span className="font-mono text-xs">
-                                {residual.toFixed(2)}
-                              </span>
-                              <Button
-                                size="icon"
-                                variant="ghost"
-                                className="h-6 w-6"
-                                onClick={() => handleDeleteBlock(block)}
-                                disabled={isReadOnlyLut}
-                                title={
-                                  isReadOnlyLut
-                                    ? "Cannot delete blocks in pre-trained demos"
-                                    : "Delete this block"
-                                }
-                              >
-                                <X className="w-3 h-3" />
-                              </Button>
-                            </div>
-                          </div>
-                          <input
-                            type="range"
-                            min={0}
-                            max={2.5}
-                            step={0.025}
-                            value={residual}
-                            onChange={(e) =>
-                              handleResidualChange(
-                                block,
-                                parseFloat(e.target.value || "0")
-                              )
-                            }
-                            disabled={!enabled}
-                            className="w-full"
-                          />
-                          <p className="text-[10px] text-muted-foreground">
-                            How loud the LUT for block {block} is once it’s in.
-                          </p>
-                        </div>
-                      );
-                    })}
-
-                    {!isReadOnlyLut && (
-                      <div className="mt-3 space-y-1 text-xs">
-                        <label className="text-muted-foreground">
-                          Add LUT block
-                        </label>
-                        <div className="flex gap-2">
-                          <input
-                            type="text"
-                            className="flex-1 rounded-lg border bg-background/80 px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-primary/60"
-                            placeholder="e.g. -9 or 12"
-                            value={newBlockInput}
-                            onChange={(e) => setNewBlockInput(e.target.value)}
-                          />
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={handleAddBlock}
-                          >
-                            Add
-                          </Button>
-                        </div>
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-muted" />
                       </div>
-                    )}
-                  </div>
-                </div>
-              </Card>
-            </motion.div>
-
-            {/* Teaching Card */}
-            <motion.div variants={fadeInUp(0.15)}>
-              <Card className="p-5 space-y-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <Sparkles className="w-5 h-5 text-secondary" />
-                  <h3 className="font-semibold text-foreground">
-                    Teach Custom Q&amp;A
-                  </h3>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Imprint a specific Q&amp;A. The model will treat it as a
-                  strong memory via the LUT (using your currently enabled WNN
-                  blocks).
-                </p>
-
-                {isReadOnlyLut && (
-                  <p className="text-[11px] text-amber-500">
-                    The current LUT is a pre-trained Astarus demo. Create or
-                    load another LUT to store your own Q&amp;A memories.
-                  </p>
-                )}
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="mt-1"
-                  onClick={() => {
-                    if (isReadOnlyLut) return;
-                    setTeachOpen((x) => !x);
-                  }}
-                  disabled={isReadOnlyLut}
-                >
-                  {teachOpen ? "Hide teaching form" : "Open teaching form"}
-                </Button>
-
-                {teachOpen && !isReadOnlyLut && (
-                  <div className="space-y-2 mt-3">
-                    <div className="space-y-1 text-xs">
-                      <label className="text-muted-foreground">
-                        Question (what the user might ask)
-                      </label>
-                      <textarea
-                        className="w-full rounded-lg border bg-background/80 px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-secondary/60"
-                        rows={2}
-                        value={teachQuestion}
-                        onChange={(e) => setTeachQuestion(e.target.value)}
-                      />
+                      <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-card px-2 text-muted-foreground">or load custom</span>
+                      </div>
                     </div>
-                    <div className="space-y-1 text-xs">
-                      <label className="text-muted-foreground">
-                        Ideal answer from the assistant
-                      </label>
-                      <textarea
-                        className="w-full rounded-lg border bg-background/80 px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-secondary/60"
-                        rows={3}
-                        value={teachAnswer}
-                        onChange={(e) => setTeachAnswer(e.target.value)}
+
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        className="flex-1 rounded-lg border-2 border-muted bg-background px-3 py-2 text-sm font-mono focus:outline-none focus:border-primary/50 transition-colors"
+                        placeholder="Enter LUT name..."
+                        value={lutInput}
+                        onChange={(e) => setLutInput(e.target.value)}
                       />
+                      <Button onClick={handleLoadLut} variant="outline" size="sm">
+                        Load
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              </motion.div>
+
+              <motion.div variants={fadeInUp(0.2)}>
+                <Card className="p-5 border-0 shadow-lg bg-card/80 backdrop-blur-sm">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-secondary flex items-center justify-center">
+                        <Brain className="w-4 h-4 text-white" />
+                      </div>
+                      <h3 className="font-bold text-foreground">Teach the AI</h3>
                     </div>
                     <Button
                       size="sm"
-                      className="w-full"
-                      onClick={handleTeach}
+                      variant="ghost"
+                      onClick={() => setTeachOpen(!teachOpen)}
+                      className="gap-1"
                     >
-                      Store Q&amp;A in LUT
+                      {teachOpen ? "Close" : "Expand"}
+                      <ChevronDown className={`w-4 h-4 transition-transform ${teachOpen ? "rotate-180" : ""}`} />
                     </Button>
                   </div>
-                )}
-              </Card>
-            </motion.div>
 
-            {/* Fake Docs Training */}
-            <motion.div variants={fadeInUp(0.2)}>
-              <Card className="p-5 space-y-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <Database className="w-5 h-5 text-accent" />
-                  <h3 className="font-semibold text-foreground">
-                    Astarus AI Internal Example Docs
-                  </h3>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Load a small curated knowledge base about Astarus AI into the
-                  LUT. For the default Astarus demo LUT, this knowledge is
-                  already pre-loaded so you can start chatting right away.
-                </p>
+                  <AnimatePresence>
+                    {teachOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="space-y-3 overflow-hidden"
+                      >
+                        {isReadOnlyLut && (
+                          <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-50 border border-amber-200">
+                            <Info className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                            <p className="text-xs text-amber-700">
+                              This is a read-only demo LUT. Create a new LUT to add custom knowledge.
+                            </p>
+                          </div>
+                        )}
+                        <div className="space-y-2">
+                          <label className="text-xs font-medium text-muted-foreground">Question</label>
+                          <input
+                            type="text"
+                            className="w-full rounded-lg border-2 border-muted bg-background px-3 py-2 text-sm focus:outline-none focus:border-primary/50 transition-colors"
+                            placeholder="What is your favorite color?"
+                            value={teachQuestion}
+                            onChange={(e) => setTeachQuestion(e.target.value)}
+                            disabled={isReadOnlyLut}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-xs font-medium text-muted-foreground">Answer</label>
+                          <textarea
+                            className="w-full rounded-lg border-2 border-muted bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:border-primary/50 transition-colors"
+                            rows={2}
+                            placeholder="My favorite color is purple."
+                            value={teachAnswer}
+                            onChange={(e) => setTeachAnswer(e.target.value)}
+                            disabled={isReadOnlyLut}
+                          />
+                        </div>
+                        <Button
+                          onClick={handleTeach}
+                          disabled={isReadOnlyLut || !teachQuestion.trim() || !teachAnswer.trim()}
+                          className="w-full bg-gradient-secondary hover:opacity-90 text-white"
+                        >
+                          <Sparkles className="w-4 h-4 mr-2" />
+                          Teach Model
+                        </Button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
-                {isReadOnlyLut && (
-                  <p className="text-[11px] text-muted-foreground">
-                    This pre-trained demo LUT already has the Astarus docs baked
-                    in. Switch to a custom LUT if you want to run the training
-                    flow yourself.
-                  </p>
-                )}
-              </Card>
-            </motion.div>
+                  {!teachOpen && (
+                    <p className="text-sm text-muted-foreground">
+                      Add custom Q&A pairs to personalize the model's responses in real-time.
+                    </p>
+                  )}
+                </Card>
+              </motion.div>
 
-            {/* Quick Notes */}
-            <motion.div variants={fadeInUp(0.25)}>
-              <Card className="p-5 space-y-3 bg-muted/40">
-                <div className="flex items-center gap-2 mb-1">
-                  <MessageCircle className="w-5 h-5 text-success" />
-                  <h3 className="font-semibold text-foreground">
-                    How to play with this demo
-                  </h3>
-                </div>
-                <ul className="text-xs text-muted-foreground space-y-1.5">
-                  <li>
-                    • The default LUT{" "}
-                    <span className="font-mono">
-                      {initialPretrained?.lutName}
-                    </span>{" "}
-                    is pre-trained on Astarus AI notes and is read-only.
-                  </li>
-                  <li>
-                    • Use the pre-trained dropdown to jump back to the Astarus
-                    demo or any future demos you add.
-                  </li>
-                  <li>
-                    • Click the refresh icon in “LUT Controls” to create a new
-                    trainable LUT.
-                  </li>
-                  <li>
-                    • Use the “Load or switch LUT by name” field to jump to any
-                    existing LUT id.
-                  </li>
-                  <li>
-                    • For non pre-trained LUTs, click “Train on Astarus AI
-                    example docs” to inject the curated knowledge base.
-                  </li>
-                  <li>
-                    • Increase the residual for a block to make that LUT
-                    “louder” versus base Mistral.
-                  </li>
-                  <li>
-                    • Lower the threshold to make the LUT fire more often; raise
-                    it to rely more on the base model.
-                  </li>
-                  <li>
-                    • Use “Store Q&amp;A in LUT” on a trainable LUT for your own
-                    custom memories.
-                  </li>
-                  <li>
-                    • In non pre-trained LUTs, you can add/delete LUT blocks to
-                    explore different WNN layouts.
-                  </li>
-                </ul>
-              </Card>
+              <motion.div variants={fadeInUp(0.3)}>
+                <Card className="p-5 border-0 shadow-lg bg-card/80 backdrop-blur-sm">
+                  <button
+                    onClick={() => setShowAdvanced(!showAdvanced)}
+                    className="w-full flex items-center justify-between"
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
+                        <Sliders className="w-4 h-4 text-muted-foreground" />
+                      </div>
+                      <h3 className="font-bold text-foreground">Advanced Settings</h3>
+                    </div>
+                    <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${showAdvanced ? "rotate-180" : ""}`} />
+                  </button>
+
+                  <AnimatePresence>
+                    {showAdvanced && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="mt-4 space-y-4 overflow-hidden"
+                      >
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <label className="text-xs font-medium text-muted-foreground">Threshold</label>
+                            <span className="text-xs font-mono text-foreground">{threshold.toFixed(2)}</span>
+                          </div>
+                          <input
+                            type="range"
+                            min="0"
+                            max="1"
+                            step="0.01"
+                            value={threshold}
+                            onChange={(e) => setThreshold(parseFloat(e.target.value))}
+                            className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="text-xs font-medium text-muted-foreground">Active Blocks</label>
+                          <div className="flex flex-wrap gap-2">
+                            {availableBlocks.map((block) => (
+                              <div
+                                key={block}
+                                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-mono cursor-pointer transition-all ${
+                                  wnnBlocks.includes(block)
+                                    ? "bg-primary/10 text-primary border-2 border-primary/30"
+                                    : "bg-muted text-muted-foreground border-2 border-transparent"
+                                }`}
+                                onClick={() => toggleBlock(block)}
+                              >
+                                {wnnBlocks.includes(block) && <Check className="w-3 h-3" />}
+                                Block {block}
+                                {!isReadOnlyLut && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteBlock(block);
+                                    }}
+                                    className="ml-1 hover:text-destructive"
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </button>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {!isReadOnlyLut && (
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              className="flex-1 rounded-lg border-2 border-muted bg-background px-3 py-2 text-sm font-mono focus:outline-none focus:border-primary/50 transition-colors"
+                              placeholder="Block index"
+                              value={newBlockInput}
+                              onChange={(e) => setNewBlockInput(e.target.value)}
+                            />
+                            <Button onClick={handleAddBlock} size="sm" variant="outline">
+                              <Plus className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        )}
+
+                        {wnnBlocks.length > 0 && (
+                          <div className="space-y-3">
+                            <label className="text-xs font-medium text-muted-foreground">Block Residuals</label>
+                            {wnnBlocks.map((block) => (
+                              <div key={block} className="space-y-1">
+                                <div className="flex justify-between text-xs">
+                                  <span className="font-mono">Block {block}</span>
+                                  <span className="font-mono">{(residualMap[String(block)] ?? 1.0).toFixed(2)}</span>
+                                </div>
+                                <input
+                                  type="range"
+                                  min="0"
+                                  max="2"
+                                  step="0.05"
+                                  value={residualMap[String(block)] ?? 1.0}
+                                  onChange={(e) => handleResidualChange(block, parseFloat(e.target.value))}
+                                  disabled={isReadOnlyLut}
+                                  className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary disabled:opacity-50"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </Card>
+              </motion.div>
+
+              <motion.div variants={fadeInUp(0.4)}>
+                <Card className="p-5 border-0 shadow-lg bg-gradient-to-br from-primary/5 to-secondary/5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Rocket className="w-5 h-5 text-primary" />
+                    <h3 className="font-bold text-foreground">How It Works</h3>
+                  </div>
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    <li className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
+                      <span>LUT stores knowledge as embedding corrections</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
+                      <span>During inference, relevant corrections are retrieved</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
+                      <span>Model outputs are steered toward learned behavior</span>
+                    </li>
+                  </ul>
+                </Card>
+              </motion.div>
             </motion.div>
-          </motion.div>
+          </div>
         </div>
       </motion.section>
-
-      {/* CTA Section */}
-      <section className="py-16 px-4 bg-muted/30">
-        <div className="container">
-          <Card className="max-w-4xl mx-auto p-10 text-center gradient-bg text-white">
-            <h2 className="text-black mb-4">LUTs inside real LLMs</h2>
-            <p className="text-sm sm:text-base mb-6 text-black/90">
-              This demo shows a single-user LUT on top of a 7B-class model.
-              Imagine per-user LUTs for thousands of users, all updating in real
-              time without retraining the base model.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button variant="secondary" size="sm" className="group">
-                View API Docs
-                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="bg-white text-primary hover:bg-white/90"
-              >
-                Talk to us about pilots
-              </Button>
-            </div>
-          </Card>
-        </div>
-      </section>
 
       <Footer />
     </div>

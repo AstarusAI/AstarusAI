@@ -1,250 +1,135 @@
 import { Card } from "@/components/ui/card";
 import { AlertCircle, DollarSign, Clock, Zap } from "lucide-react";
 import { motion } from "framer-motion";
-import { fadeInUp, staggerContainer } from "@/lib/motion";
-
-const colorThemes = [
-  {
-    border: "border-primary",
-    iconBg: "bg-primary/5",
-    iconColor: "text-primary",
-  },
-  {
-    border: "border-secondary",
-    iconBg: "bg-secondary/5",
-    iconColor: "text-secondary",
-  },
-  {
-    border: "border-primary",
-    iconBg: "bg-primary/5",
-    iconColor: "text-primary",
-  },
-  {
-    border: "border-secondary",
-    iconBg: "bg-secondary/5",
-    iconColor: "text-secondary",
-  },
-];
+import { fadeInUp, fadeIn, staggerContainer } from "@/lib/motion";
 
 const problems = [
   {
     icon: DollarSign,
     title: "Expensive Fine-Tuning",
-    description: "Traditional model adaptation requires costly compute resources and full retraining cycles.",
-    gradient: "from-red-500/20 via-orange-500/20 to-yellow-500/20",
-    imageGradient: "bg-gradient-to-br from-red-400 via-orange-400 to-yellow-400",
+    description: "Traditional model adaptation requires costly compute resources and full retraining cycles that can cost thousands of dollars.",
     image: "/expensivefinetuning.png",
+    color: "primary",
   },
   {
     icon: Clock,
     title: "Slow to Adapt",
-    description: "Current methods can't update in real-time, making personalization impractical at scale.",
-    gradient: "from-blue-500/20 via-indigo-500/20 to-purple-500/20",
-    imageGradient: "bg-gradient-to-br from-blue-400 via-indigo-400 to-purple-400",
+    description: "Current methods can't update in real-time, making personalization impractical at scale for enterprise applications.",
     image: "/slow.png",
+    color: "secondary",
   },
   {
     icon: AlertCircle,
     title: "Catastrophic Forgetting",
-    description: "Backpropagation-based approaches struggle with continuous learning without losing previous knowledge.",
-    gradient: "from-pink-500/20 via-rose-500/20 to-red-500/20",
-    imageGradient: "bg-gradient-to-br from-pink-400 via-rose-400 to-red-400",
+    description: "Backpropagation-based approaches struggle with continuous learning without losing previously learned knowledge.",
     image: "/forget.png",
+    color: "primary",
   },
   {
     icon: Zap,
     title: "Complex RAG Systems",
-    description: "External retrieval augmentation adds infrastructure complexity and latency without true learning.",
-    gradient: "from-cyan-500/20 via-teal-500/20 to-green-500/20",
-    imageGradient: "bg-gradient-to-br from-cyan-400 via-teal-400 to-green-400",
+    description: "External retrieval augmentation adds infrastructure complexity and latency without enabling true model learning.",
     image: "/complex.png",
+    color: "secondary",
   },
 ];
-
-// Square image component
-const ProblemOctagon = ({ problem, index, position }: { problem: typeof problems[0], index: number, position: string }) => {
-  const Icon = problem.icon;
-  const theme = colorThemes[index] ?? colorThemes[0];
-  const strokeColors = ['primary', 'secondary', 'primary', 'secondary'];
-  const strokeColor = strokeColors[index] || 'primary';
-  
-  const positionClasses = {
-    'top-left': 'flex-row',
-    'top-right': 'flex-row-reverse',
-    'bottom-left': 'flex-row',
-    'bottom-right': 'flex-row-reverse',
-  };
-  
-  const textAlignClasses = {
-    'top-left': 'text-left',
-    'top-right': 'text-right',
-    'bottom-left': 'text-left',
-    'bottom-right': 'text-right',
-  };
-
-  return (
-    <div className={`flex flex-col md:flex-row items-center gap-4 md:gap-6 ${positionClasses[position as keyof typeof positionClasses]}`}>
-      {/* Square with image */}
-      <div className="relative flex-shrink-0">
-        <motion.div
-          className="relative group w-28 h-28 sm:w-36 sm:h-36 md:w-40 md:h-40 lg:w-48 lg:h-48"
-          whileHover={{ scale: 1.1, rotate: 5 }}
-          transition={{ duration: 0.3 }}
-        >
-          {/* Square image container */}
-          <div className="relative w-full h-full overflow-hidden rounded-lg bg-white">
-            <img 
-              src={problem.image} 
-              alt={problem.title}
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/40"></div>
-          </div>
-          
-          {/* Square border */}
-          <svg 
-            className="absolute inset-0 w-full h-full pointer-events-none" 
-            viewBox="0 0 100 100" 
-            preserveAspectRatio="none"
-          >
-            <defs>
-              <filter id={`glow-${index}`}>
-                <feGaussianBlur stdDeviation="0.5" result="coloredBlur"/>
-                <feMerge>
-                  <feMergeNode in="coloredBlur"/>
-                  <feMergeNode in="SourceGraphic"/>
-                </feMerge>
-              </filter>
-            </defs>
-            <rect
-              x="0"
-              y="0"
-              width="100"
-              height="100"
-              fill="none"
-              stroke={`hsl(var(--${strokeColor}))`}
-              strokeWidth="2"
-              rx="8"
-              className="group-hover:stroke-[2.5] transition-all duration-300"
-              filter={`url(#glow-${index})`}
-            />
-          </svg>
-          
-          {/* Icon badge on square */}
-          <div className={`absolute -top-1 -right-1 md:-top-2 md:-right-2 w-10 h-10 md:w-14 md:h-14 rounded-full ${theme.iconBg} flex items-center justify-center border-2 md:border-4 border-white dark:border-gray-800 shadow-xl group-hover:scale-110 transition-transform duration-300 z-10`}>
-            <Icon className={`w-5 h-5 md:w-7 md:h-7 ${theme.iconColor}`} />
-          </div>
-          
-          {/* Glow effect */}
-          <div className={`absolute inset-0 ${theme.iconBg} rounded-full blur-2xl opacity-0 group-hover:opacity-40 transition-opacity duration-300 -z-10`}></div>
-        </motion.div>
-      </div>
-
-      {/* Text content outside square */}
-      <div className={`flex-1 text-center md:${textAlignClasses[position as keyof typeof textAlignClasses]}`}>
-        <motion.div
-          initial={{ opacity: 0, x: position.includes('left') ? -20 : 20 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: index * 0.1 + 0.3 }}
-        >
-          <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 mb-2 md:mb-3 group-hover:text-primary transition-colors">
-            {problem.title}
-          </h3>
-          <p className="text-sm sm:text-base text-gray-700 leading-relaxed max-w-md mx-auto md:mx-0 px-2 sm:px-0">
-            {problem.description}
-          </p>
-        </motion.div>
-      </div>
-    </div>
-  );
-};
 
 export const Problem = () => {
   return (
     <motion.section
-      className="pt-8 sm:pt-12 pb-6 sm:pb-8 px-4 relative bg-white overflow-hidden rounded-t-3xl -mt-12 z-10"
+      className="relative py-24 px-4 bg-white overflow-hidden"
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, amount: 0.2 }}
-      variants={fadeInUp(0)}
+      viewport={{ once: true, amount: 0.1 }}
+      variants={fadeIn()}
     >
-      {/* Background decoration */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-secondary rounded-full blur-3xl"></div>
-      </div>
+      <div className="absolute inset-0 bg-mesh-gradient opacity-30" />
+      <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/5 to-transparent" />
 
       <div className="container relative z-10">
-        {/* Header section - centered */}
         <motion.div
-          className="max-w-3xl mx-auto text-center mb-12 space-y-4 -mt-8"
+          className="max-w-3xl mx-auto text-center mb-16 space-y-6"
           variants={fadeInUp(0.1)}
         >
-          <div className="inline-block px-4 py-2 rounded-full bg-primary/5 border-2 border-primary/20">
-            <span className="text-sm font-semibold text-primary">Challenges We Solve</span>
+          <div className="section-badge mx-auto">
+            <AlertCircle className="w-4 h-4 text-primary" />
+            <span className="text-primary">The Challenge</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent px-4">
-            The Problem
+          
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-foreground">
+            Why Current AI{" "}
+            <span className="text-gradient">Falls Short</span>
           </h2>
-          <p className="text-base sm:text-lg md:text-xl text-gray-700 font-medium leading-relaxed px-4">
-            Current LLMs lack the ability to learn continuously and adapt in real-time — a fundamental limitation that hinders personalization and enterprise adoption.
+          
+          <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
+            Modern LLMs lack the ability to learn continuously and adapt in real-time 
+            — a fundamental limitation that hinders personalization and enterprise adoption.
           </p>
         </motion.div>
 
-        {/* Square N-pattern layout */}
-        <div className="relative max-w-7xl mx-auto py-6 sm:py-8 md:py-12 min-h-[600px] sm:min-h-[500px] md:min-h-[600px]">
-          {/* Grid layout for N pattern: 1 column on mobile, 2 columns on desktop */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 md:gap-12 lg:gap-16 h-full px-4 sm:px-0">
-            {/* Top Left - Problem 0 */}
-            <motion.div
-              key={0}
-              className="relative"
-              initial={{ opacity: 0, scale: 0.5, x: -100, y: -50 }}
-              whileInView={{ opacity: 1, scale: 1, x: 0, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0, type: "spring", stiffness: 100 }}
-            >
-              <ProblemOctagon problem={problems[0]} index={0} position="top-left" />
-            </motion.div>
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 max-w-6xl mx-auto"
+          variants={staggerContainer(0.1, 0.1)}
+        >
+          {problems.map((problem, index) => {
+            const Icon = problem.icon;
+            const isOdd = index % 2 === 1;
+            
+            return (
+              <motion.div
+                key={index}
+                variants={fadeInUp(index * 0.1)}
+                whileHover={{ y: -8 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Card className={`group relative overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-500 h-full ${
+                  isOdd ? "bg-gradient-to-br from-secondary/5 to-secondary/10" : "bg-gradient-to-br from-primary/5 to-primary/10"
+                }`}>
+                  <div className="absolute top-0 right-0 w-32 h-32 opacity-10">
+                    <Icon className={`w-full h-full ${isOdd ? "text-secondary" : "text-primary"}`} />
+                  </div>
 
-            {/* Top Right - Problem 2 */}
-            <motion.div
-              key={2}
-              className="relative"
-              initial={{ opacity: 0, scale: 0.5, x: 100, y: -50 }}
-              whileInView={{ opacity: 1, scale: 1, x: 0, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.2, type: "spring", stiffness: 100 }}
-            >
-              <ProblemOctagon problem={problems[2]} index={2} position="top-right" />
-            </motion.div>
+                  <div className="p-6 sm:p-8 relative z-10">
+                    <div className="flex items-start gap-5">
+                      <div className="relative flex-shrink-0">
+                        <div className={`w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-4 shadow-xl transition-all duration-300 group-hover:scale-105 group-hover:shadow-2xl ${
+                          isOdd ? "border-secondary/30" : "border-primary/30"
+                        }`}>
+                          <img
+                            src={problem.image}
+                            alt={problem.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        
+                        <div className={`absolute -bottom-2 -right-2 w-10 h-10 rounded-xl flex items-center justify-center shadow-lg transition-transform duration-300 group-hover:scale-110 ${
+                          isOdd ? "bg-gradient-secondary" : "bg-gradient-primary"
+                        }`}>
+                          <Icon className="w-5 h-5 text-white" />
+                        </div>
+                      </div>
 
-            {/* Bottom Left - Problem 1 */}
-            <motion.div
-              key={1}
-              className="relative"
-              initial={{ opacity: 0, scale: 0.5, x: -100, y: 50 }}
-              whileInView={{ opacity: 1, scale: 1, x: 0, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.1, type: "spring", stiffness: 100 }}
-            >
-              <ProblemOctagon problem={problems[1]} index={1} position="bottom-left" />
-            </motion.div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className={`text-xl sm:text-2xl font-bold mb-3 transition-colors duration-300 ${
+                          isOdd ? "group-hover:text-secondary" : "group-hover:text-primary"
+                        }`}>
+                          {problem.title}
+                        </h3>
+                        <p className="text-muted-foreground leading-relaxed">
+                          {problem.description}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
 
-            {/* Bottom Right - Problem 3 */}
-            <motion.div
-              key={3}
-              className="relative"
-              initial={{ opacity: 0, scale: 0.5, x: 100, y: 50 }}
-              whileInView={{ opacity: 1, scale: 1, x: 0, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.3, type: "spring", stiffness: 100 }}
-            >
-              <ProblemOctagon problem={problems[3]} index={3} position="bottom-right" />
-            </motion.div>
-          </div>
-        </div>
+                  <div className={`absolute bottom-0 left-0 right-0 h-1 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left ${
+                    isOdd ? "bg-gradient-secondary" : "bg-gradient-primary"
+                  }`} />
+                </Card>
+              </motion.div>
+            );
+          })}
+        </motion.div>
       </div>
     </motion.section>
   );

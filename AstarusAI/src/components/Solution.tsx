@@ -1,120 +1,185 @@
 import { Card } from "@/components/ui/card";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Sparkles, Zap, Database, RefreshCw, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
-import { fadeIn, fadeInUp, staggerContainer, scaleOnHover } from "@/lib/motion";
+import { fadeIn, fadeInUp, staggerContainer } from "@/lib/motion";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
 const features = [
   {
+    icon: Zap,
     title: "Real-Time Learning",
     description: "Update model behavior in seconds with append-only lookup tables that require negligible compute.",
   },
   {
+    icon: Database,
     title: "Native Integration",
     description: "Uses the model's internal embeddings — no complex RAG infrastructure needed.",
   },
   {
+    icon: RefreshCw,
     title: "Cost-Effective",
-    description: "Dramatically lower compute and infrastructure costs compared to fine-tuning or traditional RAG systems.",
+    description: "Dramatically lower compute and infrastructure costs compared to fine-tuning.",
   },
   {
+    icon: Sparkles,
     title: "Continuous Improvement",
-    description: "The model accumulates corrections and improvements over time, becoming better at routine tasks automatically.",
+    description: "The model accumulates corrections over time, becoming better automatically.",
+  },
+];
+
+const steps = [
+  {
+    step: "01",
+    title: "Inference",
+    description: "Model processes input and generates embeddings at selected layers.",
+    color: "primary",
+  },
+  {
+    step: "02",
+    title: "Lookup",
+    description: "LUT searches for matching embeddings and retrieves correction vectors.",
+    color: "secondary",
+  },
+  {
+    step: "03",
+    title: "Correction",
+    description: "Corrections are applied to logits, steering predictions toward learned behavior.",
+    color: "primary",
+  },
+  {
+    step: "04",
+    title: "Output",
+    description: "Personalized, adapted response is generated in real-time.",
+    color: "secondary",
   },
 ];
 
 export const Solution = () => {
   return (
     <motion.section
-      className="py-12 sm:py-16 md:py-24 px-4 relative bg-black rounded-t-3xl -mt-12 z-10"
+      className="relative py-24 px-4 bg-gradient-dark overflow-hidden"
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, amount: 0.2 }}
+      viewport={{ once: true, amount: 0.1 }}
       variants={fadeIn()}
     >
-      <div className="container">
+      <div className="absolute inset-0 opacity-30">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-secondary/20 rounded-full blur-3xl" />
+      </div>
+
+      <div className="container relative z-10">
         <motion.div
-          className="max-w-3xl mx-auto text-center mb-16 space-y-4"
+          className="max-w-3xl mx-auto text-center mb-16 space-y-6"
           variants={fadeInUp(0.1)}
         >
-          <h2 className="text-white text-3xl sm:text-4xl font-bold px-4">Our Solution</h2>
-          <p className="text-base sm:text-lg md:text-xl text-white/90 leading-relaxed font-medium px-4">
-            We've developed a <span className="text-primary font-bold">memory-augmented transformer architecture</span> that adds a small, trainable lookup table (LUT) layer to the some of the transformer blocks.
+          <div className="section-badge mx-auto bg-white/5 border-white/10">
+            <Sparkles className="w-4 h-4 text-primary" />
+            <span className="text-white/90">Our Innovation</span>
+          </div>
+          
+          <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white">
+            Memory-Augmented{" "}
+            <span className="text-gradient">Transformers</span>
+          </h2>
+          
+          <p className="text-lg sm:text-xl text-white/70 max-w-2xl mx-auto">
+            We've developed a breakthrough architecture that adds a small, trainable 
+            lookup table (LUT) layer to transformer blocks, enabling instant learning.
           </p>
         </motion.div>
 
-        <motion.div
-          className="grid lg:grid-cols-2 gap-12 items-start max-w-7xl mx-auto"
-          variants={staggerContainer(0.2, 0.2)}
-        >
-          {/* Left side - explanation */}
-          <motion.div className="space-y-4 sm:space-y-6" variants={fadeInUp(0.2)}>
-            <p className="text-base sm:text-lg md:text-xl text-white/90 leading-relaxed font-semibold">
-              Learn how our memory-augmented architecture enables real-time model adaptation.
-            </p>
-            <p className="text-sm sm:text-base text-white/80 leading-relaxed">
-              During inference, the LUT maps activation keys to corrective logits that are added to the model output. Updating the LUT is as simple as adding rows to a table, no external dependencies.
-            </p>
-            <motion.div className="pt-4 space-y-4" variants={staggerContainer(0.1, 0.1)}>
-              {features.map((feature, index) => (
-                <motion.div key={index} className="flex gap-3" variants={fadeInUp(index * 0.05)}>
-                  <CheckCircle2 className="w-6 h-6 text-primary flex-shrink-0 mt-0.5" />
-                  <div>
-                    <h4 className="font-bold text-white mb-1">{feature.title}</h4>
-                    <p className="text-sm text-white/80">{feature.description}</p>
-                  </div>
-                </motion.div>
-              ))}
+        <div className="grid lg:grid-cols-2 gap-12 items-start max-w-7xl mx-auto">
+          <motion.div className="space-y-8" variants={staggerContainer(0.1, 0.1)}>
+            <motion.div variants={fadeInUp(0.1)}>
+              <h3 className="text-2xl font-bold text-white mb-6">Key Advantages</h3>
+              <div className="grid gap-4">
+                {features.map((feature, index) => {
+                  const Icon = feature.icon;
+                  return (
+                    <motion.div
+                      key={index}
+                      variants={fadeInUp(index * 0.1)}
+                      className="group"
+                    >
+                      <Card className="p-5 bg-white/5 border-white/10 hover:bg-white/10 transition-all duration-300 hover:border-primary/30">
+                        <div className="flex gap-4">
+                          <div className="w-12 h-12 rounded-xl bg-gradient-primary flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                            <Icon className="w-6 h-6 text-white" />
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-white mb-1">{feature.title}</h4>
+                            <p className="text-sm text-white/60">{feature.description}</p>
+                          </div>
+                        </div>
+                      </Card>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </motion.div>
+
+            <motion.div variants={fadeInUp(0.3)}>
+              <Link to="/chat">
+                <Button className="cta-button group">
+                  <span>Try It Yourself</span>
+                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
             </motion.div>
           </motion.div>
 
-          {/* Right side - visual card */}
-          <motion.div
-            variants={fadeInUp(0.3)}
-            whileHover={scaleOnHover.whileHover}
-            whileTap={scaleOnHover.whileTap}
-            transition={scaleOnHover.transition}
-          >
-            <Card className="p-8 bg-white border-2 border-primary/20 relative overflow-hidden">
-              <div className="relative space-y-6">
-                <h3 className="text-2xl font-bold text-primary">How It Works</h3>
+          <motion.div variants={fadeInUp(0.2)}>
+            <Card className="p-8 bg-white/5 border-white/10 backdrop-blur-sm">
+              <h3 className="text-2xl font-bold text-white mb-8 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-secondary flex items-center justify-center">
+                  <RefreshCw className="w-5 h-5 text-white" />
+                </div>
+                How It Works
+              </h3>
 
-                <motion.div className="space-y-3" variants={staggerContainer(0.15, 0.1)}>
-                  <motion.div className="p-4 rounded-lg bg-primary text-white border-2 border-primary" variants={fadeInUp(0.05)}>
-                    <div className="text-sm font-bold text-white mb-1">Step 1: Inference</div>
-                    <p className="text-sm text-white/90 font-medium">Model gets feedback</p>
+              <div className="space-y-6">
+                {steps.map((step, index) => (
+                  <motion.div
+                    key={index}
+                    className="relative"
+                    initial={{ opacity: 0, x: 20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.15 }}
+                  >
+                    {index < steps.length - 1 && (
+                      <div className="absolute left-6 top-14 bottom-0 w-px bg-gradient-to-b from-white/20 to-transparent" />
+                    )}
+                    
+                    <div className="flex gap-5">
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 font-bold text-white ${
+                        step.color === "primary" ? "bg-gradient-primary" : "bg-gradient-secondary"
+                      }`}>
+                        {step.step}
+                      </div>
+                      <div className="pt-1">
+                        <h4 className="font-bold text-white mb-1">{step.title}</h4>
+                        <p className="text-sm text-white/60">{step.description}</p>
+                      </div>
+                    </div>
                   </motion.div>
+                ))}
+              </div>
 
-                  <div className="flex justify-center">
-                    <div className="w-px h-6 bg-primary" />
-                  </div>
-
-                  <motion.div className="p-4 rounded-lg bg-accent text-white border-2 border-accent" variants={fadeInUp(0.1)}>
-                    <div className="text-sm font-bold text-white mb-1">Step 2: Lookup</div>
-                    <p className="text-sm text-white/90 font-medium">The Lookup Table (LUT) updates using calculated embedding transformations.</p>
-                  </motion.div>
-
-                  <div className="flex justify-center">
-                    <div className="w-px h-6 bg-accent" />
-                  </div>
-
-                  <motion.div className="p-4 rounded-lg bg-primary text-white border-2 border-primary" variants={fadeInUp(0.15)}>
-                    <div className="text-sm font-bold text-white mb-1">Step 3: Correction</div>
-                    <p className="text-sm text-white/90 font-medium">These updates adjust the logits, steering future predictions.</p>
-                  </motion.div>
-
-                  <div className="flex justify-center">
-                    <div className="w-px h-6 bg-primary" />
-                  </div>
-
-                  <motion.div className="p-4 rounded-lg bg-accent text-white border-2 border-accent" variants={fadeInUp(0.2)}>
-                    <div className="text-sm font-bold text-white mb-1">Result</div>
-                    <p className="text-sm text-white font-bold">Personalized, adapted output in real-time</p>
-                  </motion.div>
-                </motion.div>
+              <div className="mt-8 p-4 rounded-xl bg-gradient-to-r from-primary/20 to-secondary/20 border border-white/10">
+                <div className="flex items-center gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-green-400" />
+                  <p className="text-sm text-white/80">
+                    <span className="font-semibold text-white">Result:</span> Personalized, 
+                    adapted output with no retraining required
+                  </p>
+                </div>
               </div>
             </Card>
           </motion.div>
-        </motion.div>
+        </div>
       </div>
     </motion.section>
   );

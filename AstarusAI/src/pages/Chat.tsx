@@ -25,8 +25,8 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { fadeIn, fadeInUp, staggerContainer } from "@/lib/motion";
 
-const BASE_URL = "https://dhzzxfr41qjcz7-8000.proxy.runpod.net";
-const MODEL = "mistral";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://dhzzxfr41qjcz7-8000.proxy.runpod.net";
+const MODEL = import.meta.env.VITE_API_MODEL || "mistral";
 
 type Message = {
   id: string;

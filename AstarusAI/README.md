@@ -4,12 +4,35 @@ Astarus AI is a marketing site for a memory-augmented AI platform. The project i
 
 ## Getting Started
 
+### Prerequisites
+
+- Node.js (v18 or higher recommended)
+- npm or yarn
+
+### Installation
+
 ```bash
 npm install
+```
+
+### Environment Variables
+
+Create a `.env` file in the root directory with the following variables:
+
+```env
+VITE_API_BASE_URL=https://your-api-url-here.com
+VITE_API_MODEL=mistral
+```
+
+**Note:** If environment variables are not set, the application will use default values. Make sure to set these for production deployments.
+
+### Development
+
+```bash
 npm run dev
 ```
 
-The development server runs at `http://localhost:5173` by default.
+The development server runs at `http://localhost:5000` by default (configured in `vite.config.ts`).
 
 ## Available Scripts
 

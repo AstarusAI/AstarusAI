@@ -16,7 +16,7 @@ import {
 import { motion } from "framer-motion";
 import { fadeIn, fadeInUp, staggerContainer } from "@/lib/motion";
 
-const BASE_URL = "https://dhzzxfr41qjcz7-8000.proxy.runpod.net";
+const BASE_URL = "https://semifinished-carmen-pantheistic.ngrok-free.dev";
 const MODEL = "mistral";
 
 // Types
@@ -45,11 +45,11 @@ const PRETRAINED_LUTS: PretrainedLutConfig[] = [
   {
     label: "Astarus AI demo",
     lutName: "demo-f0d18034",
-    blocks: [-1, -4, -9],
+    blocks: [-1, -5, -9],
     residualMap: {
-      "-1": 0.15,
-      "-4": 0.15,
-      "-9": 0.15,
+      "-1": 0.04,
+      "-4": 0.07,
+      "-9": 0.07,
     },
     readOnly: true,
   },
@@ -69,7 +69,7 @@ const DEFAULT_NEW_LUT_RESIDUALS: Record<string, number> = {
 };
 
 // Match the Python script defaults
-const DEFAULT_THRESHOLD = 0.25;
+const DEFAULT_THRESHOLD = 0.35;
 const GEN_LENGTH = 128;
 
 function generateLutName() {

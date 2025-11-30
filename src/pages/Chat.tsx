@@ -71,7 +71,7 @@ const PRETRAINED_LUTS: PretrainedLutConfig[] = [
     lutName: "AstarusAIInternalv13",
     blocks: [-1, -5, -9],
     residualMap: {
-      "-1": 0.075,
+      "-1": 0.04,
       "-5": 0.1,
       "-9": 0.1,
     },
@@ -88,7 +88,7 @@ const READ_ONLY_LUTS = PRETRAINED_LUTS.filter((p) => p.readOnly).map(
 // Defaults for *new* (non-pretrained) LUTs
 const DEFAULT_NEW_LUT_BLOCKS = [-1, -4];
 const DEFAULT_NEW_LUT_RESIDUALS: Record<string, number> = {
-  "-1": 0.75,
+  "-1": 0.20,
   "-4": 0.25,
 };
 

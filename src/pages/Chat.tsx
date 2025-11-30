@@ -19,6 +19,30 @@ import { fadeIn, fadeInUp, staggerContainer } from "@/lib/motion";
 const BASE_URL = "https://semifinished-carmen-pantheistic.ngrok-free.dev";
 const MODEL = "mistral";
 
+// ---- Chat system prompt + Mistral-style prefix (matches Python CLI) ----
+
+const SYSTEM_PROMPT =
+  "You are Astara, a friendly conversational AI assistant running on a " +
+  "LUT-augmented Mistral model created by Astarus AI. " +
+  "You are an expert on Astarus AI and have been fine-tuned on information on it. " +
+  "Astarus AI is an AI startup which focuses on building continuously trainable LLMs through LUT (look up table) based LLMs. " +
+  "You answer like a chat, not like an email. " +
+  "Be concise and informal. " +
+  "If the user just greets you or says thanks, reply briefly and naturally.";
+
+function buildMistralChatPrefix(
+  userMessage: string,
+  systemPrompt: string = SYSTEM_PROMPT
+): string {
+  const trimmedUser = userMessage.trim();
+  const content = systemPrompt
+    ? `${systemPrompt.trim()}\n\n${trimmedUser}`
+    : trimmedUser;
+
+  // Matches Python: [INST] SYSTEM_PROMPT + "\n\n" + user_message [/INST]
+  return `[INST] ${content} [/INST]`;
+}
+
 // Types
 type Message = {
   id: string;
@@ -44,12 +68,12 @@ type PretrainedLutConfig = {
 const PRETRAINED_LUTS: PretrainedLutConfig[] = [
   {
     label: "Astarus AI demo",
-    lutName: "AstarusAIInternalv2",
+    lutName: "AstarusAIInternalv13",
     blocks: [-1, -5, -9],
     residualMap: {
       "-1": 0.075,
-      "-5": 0.10,
-      "-9": 0.10,
+      "-5": 0.1,
+      "-9": 0.1,
     },
     readOnly: true,
   },
@@ -68,9 +92,9 @@ const DEFAULT_NEW_LUT_RESIDUALS: Record<string, number> = {
   "-4": 0.25,
 };
 
-// Match the Python script defaults
+// Match the Python script length if you want; currently shorter for snappy UX
 const DEFAULT_THRESHOLD = 0.45;
-const GEN_LENGTH = 128;
+const GEN_LENGTH = 350;
 
 function generateLutName() {
   const rand = Math.random().toString(16).slice(2, 10);
@@ -106,63 +130,35 @@ function cleanAnswer(raw: string): string {
 }
 
 /**
- * Mirror the Python extract_assistant_answer(user_msg, completion)
+ * Extraction is trivial now: API cuts at EOS, we just clean up.
  */
-function extractAssistantAnswer(userMsg: string, completion: string): string {
-  const patternUser = `User: ${userMsg}`;
-  let text: string = completion;
-
-  // Scope down to the part after the specific "User: <msg>"
-  const idxUser = completion.indexOf(patternUser);
-  if (idxUser !== -1) {
-    text = completion.slice(idxUser + patternUser.length);
-  }
-
-  // Then find the first "Assistant:" after that
-  const idxAssistant = text.indexOf("Assistant:");
-  if (idxAssistant !== -1) {
-    text = text.slice(idxAssistant + "Assistant:".length);
-  }
-
-  let answer = text.trim();
-
-  // Cut off at any of these markers: next [INST], next User:, or next Assistant:
-  const cutMarkers = ["[INST]", "User:", "Assistant:"];
-  let cutIdx = answer.length;
-
-  for (const marker of cutMarkers) {
-    const i = answer.indexOf(marker);
-    if (i !== -1 && i < cutIdx) {
-      cutIdx = i;
-    }
-  }
-
-  if (cutIdx !== answer.length) {
-    answer = answer.slice(0, cutIdx).trim();
-  }
-
-  if (!answer) {
-    return cleanAnswer(completion.trim());
-  }
-  return cleanAnswer(answer);
+function extractAssistantAnswer(_userMsg: string, completion: string): string {
+  return cleanAnswer(completion.trim());
 }
+
+/**
+ * Train LUT with the same chat formatting as the Python CLI:
+ *   - label_context is wrapped with buildMistralChatPrefix(question)
+ *   - label is the raw answer
+ */
 async function trainLut(
   lutName: string,
   label: string,
   labelContext: string | null,
-  wnnBlocks: number[]
+  wnnBlocks: number[],
+  threshold: number,
+  residuals: number[]
 ) {
-
-  const wrappedLabel = `[INST]${label}[/INST]`;
-  const wrappedContext = labelContext ? `${labelContext}</s>` : null;
-
   const payload = {
-    label: wrappedLabel,
-    label_context: wrappedContext,
+    label: label.trim(),
+    label_context: labelContext ? buildMistralChatPrefix(labelContext) : null,
     lut_name: lutName,
     model: MODEL,
     wnn_blocks: wnnBlocks,
+    threshold,
+    residuals,
     sparsity: 1.0,
+    cost_scale: 5,
   };
 
   const res = await fetch(`${BASE_URL}/train_lut`, {
@@ -182,6 +178,10 @@ async function trainLut(
   return json;
 }
 
+/**
+ * Generate using the same chat prefix as the CLI.
+ * prompt = [INST] SYSTEM_PROMPT + "\n\n" + user_message [/INST]
+ */
 async function generateFromApi(
   lutName: string,
   userMsg: string,
@@ -189,8 +189,7 @@ async function generateFromApi(
   wnnBlocks: number[],
   residuals: number[]
 ): Promise<GenerateResponse> {
-  const basePrompt = `User: ${userMsg}\nAssistant:`;
-  const prompt = `[INST]${basePrompt}[/INST]`;
+  const prompt = buildMistralChatPrefix(userMsg);
 
   const payload = {
     prompt,
@@ -222,7 +221,6 @@ async function generateFromApi(
 
   return json;
 }
-
 
 // Use the first pre-trained LUT as the default (Astarus AI demo)
 const initialPretrained = PRETRAINED_LUTS[0];
@@ -366,7 +364,6 @@ export default function LutDemo() {
     switchToLut(trimmed);
   };
 
-
   const handleTeach = async () => {
     if (isReadOnlyLut) {
       setStatus(
@@ -381,11 +378,10 @@ export default function LutDemo() {
       setStatus("Please provide both a question and an answer.");
       return;
     }
-    const label_context = `User: ${q}\nAssistant: `;
-    const label = a;
+
     setStatus("Teaching custom Q&A to LUT...");
     try {
-      await trainLut(lutName, label, label_context, wnnBlocks);
+      await trainLut(lutName, a, q, wnnBlocks, threshold, currentResiduals);
       setStatus("✅ Stored this Q&A in the LUT. Future answers should reflect it.");
       setTeachQuestion("");
       setTeachAnswer("");
@@ -765,8 +761,8 @@ export default function LutDemo() {
                           <input
                             type="range"
                             min={0}
-                            max={2.5}
-                            step={0.025}
+                            max={0.5}
+                            step={0.005}
                             value={residual}
                             onChange={(e) =>
                               handleResidualChange(
@@ -871,11 +867,7 @@ export default function LutDemo() {
                         onChange={(e) => setTeachAnswer(e.target.value)}
                       />
                     </div>
-                    <Button
-                      size="sm"
-                      className="w-full"
-                      onClick={handleTeach}
-                    >
+                    <Button size="sm" className="w-full" onClick={handleTeach}>
                       Store Q&amp;A in LUT
                     </Button>
                   </div>
@@ -883,7 +875,7 @@ export default function LutDemo() {
               </Card>
             </motion.div>
 
-            {/* Fake Docs Training */}
+            {/* Fake Docs Training (informational for now) */}
             <motion.div variants={fadeInUp(0.2)}>
               <Card className="p-5 space-y-3">
                 <div className="flex items-center gap-2 mb-1">
@@ -938,8 +930,12 @@ export default function LutDemo() {
                     existing LUT id.
                   </li>
                   <li>
-                    • For non pre-trained LUTs, click “Train on Astarus AI
-                    example docs” to inject the curated knowledge base.
+                    • Use “Store Q&amp;A in LUT” on a trainable LUT for your own
+                    custom memories.
+                  </li>
+                  <li>
+                    • In non pre-trained LUTs, you can add/delete LUT blocks to
+                    explore different WNN layouts.
                   </li>
                   <li>
                     • Increase the residual for a block to make that LUT
@@ -948,14 +944,6 @@ export default function LutDemo() {
                   <li>
                     • Lower the threshold to make the LUT fire more often; raise
                     it to rely more on the base model.
-                  </li>
-                  <li>
-                    • Use “Store Q&amp;A in LUT” on a trainable LUT for your own
-                    custom memories.
-                  </li>
-                  <li>
-                    • In non pre-trained LUTs, you can add/delete LUT blocks to
-                    explore different WNN layouts.
                   </li>
                 </ul>
               </Card>

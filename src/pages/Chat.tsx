@@ -94,7 +94,7 @@ const DEFAULT_NEW_LUT_RESIDUALS: Record<string, number> = {
 
 // Match the Python script length if you want; currently shorter for snappy UX
 const DEFAULT_THRESHOLD = 0.45;
-const GEN_LENGTH = 350;
+const GEN_LENGTH = 300; // Max gen length
 
 function generateLutName() {
   const rand = Math.random().toString(16).slice(2, 10);

@@ -86,9 +86,9 @@ const PRETRAINED_LUTS: PretrainedLutConfig[] = [
     lutName: DEMO_LUT_NAME,
     blocks: [-1, -4, -9],
     residualMap: {
-      "-1": 0.15,
-      "-4": 0.15,
-      "-9": 0.15,
+      "-1": 0.05,
+      "-4": 0.10,
+      "-9": 0.10,
     },
     readOnly: true,
   },

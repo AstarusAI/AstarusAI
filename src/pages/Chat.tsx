@@ -52,7 +52,7 @@ type PretrainedLutConfig = {
 };
 
 // Demo uses fixed lut_name
-const DEMO_LUT_NAME = "astarus_demo";
+const DEMO_LUT_NAME = "AstarusAIInternalv14";
 
 const PRETRAINED_LUTS: PretrainedLutConfig[] = [
   {

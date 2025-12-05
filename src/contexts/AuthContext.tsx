@@ -1,6 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/lib/supabase";
-import { acceptInvitation, getPendingInvitations } from "@/lib/spaceService";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 interface User {
@@ -55,24 +54,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             email: userEmail,
             name: session.user.user_metadata?.name || userEmail.split("@")[0],
           });
-          
-          // Auto-accept pending invitations (non-blocking, runs in background)
-          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-            // Don't await - let it run in background
-            getPendingInvitations(userEmail)
-              .then(async (invitations) => {
-                for (const invitation of invitations) {
-                  try {
-                    await acceptInvitation(invitation.space_id, session.user.id, userEmail);
-                  } catch (err) {
-                    console.error('Failed to accept invitation:', err);
-                  }
-                }
-              })
-              .catch((err) => {
-                console.error('Failed to check invitations:', err);
-              });
-          }
+          // Note: Invitations are NOT auto-accepted - users must manually accept them
         } else {
           setUser(null);
         }

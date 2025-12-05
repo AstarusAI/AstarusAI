@@ -12,7 +12,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 import { fadeInUp, staggerContainer } from "@/lib/motion";
-import { Plus, Brain, Building2, User, ArrowRight, Mail, Users, X } from "lucide-react";
+import { Plus, Brain, Building2, User, ArrowRight, Mail, Users, X, Check, XCircle } from "lucide-react";
 import { 
   getUserSpaces, 
   createSpace, 
@@ -20,6 +20,9 @@ import {
   inviteToSpace, 
   getSpaceMembers, 
   removeMember,
+  getPendingInvitations,
+  acceptInvitation,
+  declineInvitation,
   type Space,
   type SpaceMember 
 } from "@/lib/spaceService";
@@ -41,6 +44,8 @@ export default function Spaces() {
   const [inviting, setInviting] = useState(false);
   const [spaceMembers, setSpaceMembers] = useState<Record<string, SpaceMember[]>>({});
   const [membersOpen, setMembersOpen] = useState<string | null>(null);
+  const [pendingInvitations, setPendingInvitations] = useState<Array<SpaceMember & { space: Space }>>([]);
+  const [processingInvitation, setProcessingInvitation] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isAuthenticated || !user) {
@@ -48,6 +53,7 @@ export default function Spaces() {
       return;
     }
     loadSpaces();
+    loadPendingInvitations();
   }, [isAuthenticated, user, navigate]);
 
   const loadSpaces = async () => {
@@ -62,6 +68,53 @@ export default function Spaces() {
       alert(error.message || "Failed to load spaces");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadPendingInvitations = async () => {
+    if (!user) return;
+    
+    try {
+      const invitations = await getPendingInvitations(user.email || '');
+      setPendingInvitations(invitations);
+    } catch (error: any) {
+      console.error("Failed to load invitations:", error);
+    }
+  };
+
+  const handleAcceptInvitation = async (spaceId: string) => {
+    if (!user) return;
+    
+    setProcessingInvitation(spaceId);
+    try {
+      await acceptInvitation(spaceId, user.id, user.email || '');
+      // Reload spaces and invitations
+      await loadSpaces();
+      await loadPendingInvitations();
+    } catch (error: any) {
+      console.error("Failed to accept invitation:", error);
+      alert(error.message || "Failed to accept invitation");
+    } finally {
+      setProcessingInvitation(null);
+    }
+  };
+
+  const handleDeclineInvitation = async (spaceId: string) => {
+    if (!user) return;
+    
+    setProcessingInvitation(spaceId);
+    try {
+      // Delete the invitation from database
+      await declineInvitation(spaceId, user.email || '');
+      // Remove from UI
+      setPendingInvitations(prev => 
+        prev.filter(inv => inv.space_id !== spaceId)
+      );
+    } catch (error: any) {
+      console.error("Failed to decline invitation:", error);
+      alert(error.message || "Failed to decline invitation");
+    } finally {
+      setProcessingInvitation(null);
     }
   };
 
@@ -243,6 +296,76 @@ export default function Spaces() {
                   </div>
                 </DialogContent>
               </Dialog>
+            </motion.div>
+
+            {/* Pending Invitations Section */}
+            {pendingInvitations.length > 0 && (
+              <motion.div variants={fadeInUp(0.05)} className="space-y-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <Mail className="w-5 h-5 text-primary" />
+                  <h2 className="text-2xl font-bold text-white">Pending Invitations</h2>
+                  <span className="px-2 py-1 rounded-full bg-primary/20 text-primary text-sm font-medium">
+                    {pendingInvitations.length}
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {pendingInvitations.map((invitation, index) => (
+                    <motion.div
+                      key={invitation.id}
+                      variants={fadeInUp(0.1 + index * 0.05)}
+                    >
+                      <Card className="glass-dark glass-border border-primary/50 hover:border-primary transition-all">
+                        <CardHeader>
+                          <div className="flex items-start justify-between mb-2">
+                            <CardTitle className="text-white">{invitation.space.name}</CardTitle>
+                            {invitation.space.type === "company" ? (
+                              <Building2 className="w-5 h-5 text-primary" />
+                            ) : (
+                              <User className="w-5 h-5 text-secondary" />
+                            )}
+                          </div>
+                          <CardDescription className="text-white/70 capitalize">
+                            {invitation.space.type} Space • Invitation
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          {invitation.space.description && (
+                            <p className="text-sm text-white/60 mb-4">{invitation.space.description}</p>
+                          )}
+                          <div className="space-y-2">
+                            <div className="flex gap-2">
+                              <Button
+                                onClick={() => handleAcceptInvitation(invitation.space_id)}
+                                disabled={processingInvitation === invitation.space_id}
+                                className="flex-1 bg-gradient-primary hover:opacity-90 text-white"
+                              >
+                                <Check className="w-4 h-4 mr-2" />
+                                {processingInvitation === invitation.space_id ? "Accepting..." : "Accept"}
+                              </Button>
+                              <Button
+                                onClick={() => handleDeclineInvitation(invitation.space_id)}
+                                disabled={processingInvitation === invitation.space_id}
+                                variant="outline"
+                                className="border-red-500/50 text-red-400 hover:bg-red-500/10"
+                              >
+                                <XCircle className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Your Spaces Section */}
+            <motion.div variants={fadeInUp(0.1)}>
+              <div className="flex items-center gap-2 mb-4">
+                <Brain className="w-5 h-5 text-white" />
+                <h2 className="text-2xl font-bold text-white">Your Spaces</h2>
+              </div>
             </motion.div>
 
             {spaces.length === 0 ? (

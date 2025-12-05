@@ -280,37 +280,58 @@ export async function acceptInvitation(spaceId: string, userId: string, userEmai
 }
 
 /**
- * Get pending invitations for a user by email
+ * Get pending invitations for a user by email (with space details)
  */
-export async function getPendingInvitations(userEmail: string): Promise<SpaceMember[]> {
+export async function getPendingInvitations(userEmail: string): Promise<Array<SpaceMember & { space: Space }>> {
   try {
     const { data, error } = await supabase
       .from('space_members')
-      .select('*')
+      .select(`
+        *,
+        spaces (*)
+      `)
       .eq('email', userEmail.toLowerCase().trim())
       .eq('status', 'pending')
       .order('invited_at', { ascending: false })
-      .limit(10); // Add limit to prevent large queries
+      .limit(10);
 
     if (error) {
-      // If table doesn't exist, RLS issue, or infinite recursion, return empty array
       if (error.code === '42P01' || error.code === 'PGRST301' || error.message?.includes('infinite recursion')) {
         console.warn('Space members table may not exist or has policy issues:', error.message);
         return [];
       }
-      // For any other error, also return empty array to prevent blocking
       console.warn('Error fetching invitations (non-blocking):', error.message);
       return [];
     }
 
-    return data || [];
+    if (!data) return [];
+    
+    // Map the data to include space information
+    return data.map((item: any) => ({
+      ...item,
+      space: item.spaces
+    })).filter((item: any) => item.space); // Filter out any without space data
   } catch (err: any) {
-    // Catch any errors and return empty array to prevent blocking
-    // Don't log as error since this is expected if tables don't exist
     if (err.message?.includes('infinite recursion')) {
       console.warn('RLS policy recursion detected - please update database policies');
     }
     return [];
+  }
+}
+
+/**
+ * Decline invitation - delete the invitation record
+ */
+export async function declineInvitation(spaceId: string, userEmail: string): Promise<void> {
+  const { error } = await supabase
+    .from('space_members')
+    .delete()
+    .eq('space_id', spaceId)
+    .eq('email', userEmail.toLowerCase().trim())
+    .eq('status', 'pending');
+
+  if (error) {
+    throw new Error(`Failed to decline invitation: ${error.message}`);
   }
 }
 

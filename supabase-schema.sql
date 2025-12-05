@@ -142,6 +142,32 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- Function to check if user is a member of a space (bypasses RLS to avoid recursion)
+CREATE OR REPLACE FUNCTION is_space_member(space_uuid UUID, user_uuid UUID, user_email TEXT)
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM space_members
+    WHERE space_id = space_uuid
+    AND status = 'accepted'
+    AND (user_id = user_uuid OR email = user_email)
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Function to check if user has pending invitation (bypasses RLS to avoid recursion)
+CREATE OR REPLACE FUNCTION has_pending_invitation(space_uuid UUID, user_email TEXT)
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM space_members
+    WHERE space_id = space_uuid
+    AND email = user_email
+    AND status = 'pending'
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- Triggers to automatically update updated_at
 DROP TRIGGER IF EXISTS update_chats_updated_at ON chats;
 CREATE TRIGGER update_chats_updated_at
@@ -195,16 +221,35 @@ ALTER TABLE spaces ENABLE ROW LEVEL SECURITY;
 ALTER TABLE space_members ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for spaces
+-- Split into two separate policies to avoid recursion
 DROP POLICY IF EXISTS "Users can view spaces they created or are members of" ON spaces;
-CREATE POLICY "Users can view spaces they created or are members of"
+DROP POLICY IF EXISTS "Users can view spaces they created" ON spaces;
+DROP POLICY IF EXISTS "Users can view spaces they are members of" ON spaces;
+
+-- Policy 1: Users can view spaces they created (no recursion)
+CREATE POLICY "Users can view spaces they created"
+  ON spaces FOR SELECT
+  USING (creator_id = auth.uid());
+
+-- Policy 2: Users can view spaces where they are accepted members (use function to bypass RLS recursion)
+CREATE POLICY "Users can view spaces they are members of"
   ON spaces FOR SELECT
   USING (
-    creator_id = auth.uid() OR
-    EXISTS (
-      SELECT 1 FROM space_members
-      WHERE space_members.space_id = spaces.id
-      AND (space_members.user_id = auth.uid() OR space_members.email = (SELECT email FROM auth.users WHERE id = auth.uid()))
-      AND space_members.status = 'accepted'
+    is_space_member(
+      spaces.id,
+      auth.uid(),
+      (auth.jwt()->>'email')
+    )
+  );
+
+-- Policy 3: Users can view spaces where they have pending invitations (use function to avoid recursion)
+DROP POLICY IF EXISTS "Users can view spaces with pending invitations" ON spaces;
+CREATE POLICY "Users can view spaces with pending invitations"
+  ON spaces FOR SELECT
+  USING (
+    has_pending_invitation(
+      spaces.id,
+      (auth.jwt()->>'email')
     )
   );
 
@@ -245,7 +290,15 @@ CREATE POLICY "Members can view other members"
   ON space_members FOR SELECT
   USING (
     (user_id = auth.uid() AND status = 'accepted') OR
-    (email = (SELECT email FROM auth.users WHERE id = auth.uid()) AND status = 'accepted')
+    (LOWER(email) = LOWER(auth.jwt()->>'email') AND status = 'accepted')
+  );
+
+-- Allow users to view their own pending invitations
+DROP POLICY IF EXISTS "Users can view their pending invitations" ON space_members;
+CREATE POLICY "Users can view their pending invitations"
+  ON space_members FOR SELECT
+  USING (
+    LOWER(email) = LOWER(auth.jwt()->>'email') AND status = 'pending'
   );
 
 DROP POLICY IF EXISTS "Space creators can invite members" ON space_members;
@@ -272,14 +325,15 @@ CREATE POLICY "Space creators can update member status"
   );
 
 DROP POLICY IF EXISTS "Users can accept invitations" ON space_members;
-CREATE POLICY "Users can accept invitations"
+DROP POLICY IF EXISTS "Users can accept or decline invitations" ON space_members;
+CREATE POLICY "Users can accept or decline invitations"
   ON space_members FOR UPDATE
   USING (
-    email = (SELECT email FROM auth.users WHERE id = auth.uid())
+    LOWER(TRIM(email)) = LOWER(TRIM(auth.jwt()->>'email'))
     AND status = 'pending'
   )
   WITH CHECK (
-    email = (SELECT email FROM auth.users WHERE id = auth.uid())
+    LOWER(TRIM(email)) = LOWER(TRIM(auth.jwt()->>'email'))
     AND (status = 'accepted' OR status = 'declined')
   );
 
@@ -292,6 +346,15 @@ CREATE POLICY "Space creators can remove members"
       WHERE spaces.id = space_members.space_id
       AND spaces.creator_id = auth.uid()
     )
+  );
+
+-- Allow users to delete their own pending invitations (decline)
+DROP POLICY IF EXISTS "Users can delete their pending invitations" ON space_members;
+CREATE POLICY "Users can delete their pending invitations"
+  ON space_members FOR DELETE
+  USING (
+    LOWER(TRIM(email)) = LOWER(TRIM(auth.jwt()->>'email'))
+    AND status = 'pending'
   );
 
 -- Trigger to automatically update updated_at for spaces

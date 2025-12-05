@@ -28,8 +28,34 @@ import { fadeIn, fadeInUp, staggerContainer } from "@/lib/motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { createChat, saveMessage, updateChatTitle } from "@/lib/chatService";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://dhzzxfr41qjcz7-8000.proxy.runpod.net";
+const BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://dhzzxfr41qjcz7-8000.proxy.runpod.net";
 const MODEL = import.meta.env.VITE_API_MODEL || "mistral";
+
+// ---- Chat system prompt + Mistral-style prefix (matches old code / Python CLI) ----
+
+const SYSTEM_PROMPT =
+  "You are Astara, a friendly conversational AI assistant running on a " +
+  "LUT-augmented Mistral model created by Astarus AI. " +
+  "You are an expert on Astarus AI and have been fine-tuned on information on it. " +
+  "Astarus AI is an AI startup which focuses on building continuously trainable LLMs through LUT (look up table) based LLMs. " +
+  "You answer like a chat, not like an email. " +
+  "Be concise and informal. " +
+  "If the user just greets you or says thanks, reply briefly and naturally.";
+
+function buildMistralChatPrefix(
+  userMessage: string,
+  systemPrompt: string = SYSTEM_PROMPT
+): string {
+  const trimmedUser = userMessage.trim();
+  const content = systemPrompt
+    ? `${systemPrompt.trim()}\n\n${trimmedUser}`
+    : trimmedUser;
+
+  // Match the Python / old-UI format
+  return `[INST] ${content} [/INST]`;
+}
 
 type Message = {
   id: string;
@@ -72,14 +98,15 @@ const READ_ONLY_LUTS = PRETRAINED_LUTS.filter((p) => p.readOnly).map(
   (p) => p.lutName
 );
 
+// Defaults for *new* LUTs (aligned roughly with old behaviour)
 const DEFAULT_NEW_LUT_BLOCKS = [-1, -4];
 const DEFAULT_NEW_LUT_RESIDUALS: Record<string, number> = {
-  "-1": 0.75,
+  "-1": 0.2,
   "-4": 0.25,
 };
 
-const DEFAULT_THRESHOLD = 0.25;
-const GEN_LENGTH = 128;
+const DEFAULT_THRESHOLD = 0.45;
+const GEN_LENGTH = 300;
 
 function generateLutName() {
   const rand = Math.random().toString(16).slice(2, 10);
@@ -104,50 +131,32 @@ function cleanAnswer(raw: string): string {
   return text.trim();
 }
 
-function extractAssistantAnswer(userMsg: string, completion: string): string {
-  const patternUser = `User: ${userMsg}`;
-  let text: string = completion;
-  const idxUser = completion.indexOf(patternUser);
-  if (idxUser !== -1) {
-    text = completion.slice(idxUser + patternUser.length);
-  }
-  const idxAssistant = text.indexOf("Assistant:");
-  if (idxAssistant !== -1) {
-    text = text.slice(idxAssistant + "Assistant:".length);
-  }
-  let answer = text.trim();
-  const cutMarkers = ["[INST]", "User:", "Assistant:"];
-  let cutIdx = answer.length;
-  for (const marker of cutMarkers) {
-    const i = answer.indexOf(marker);
-    if (i !== -1 && i < cutIdx) {
-      cutIdx = i;
-    }
-  }
-  if (cutIdx !== answer.length) {
-    answer = answer.slice(0, cutIdx).trim();
-  }
-  if (!answer) {
-    return cleanAnswer(completion.trim());
-  }
-  return cleanAnswer(answer);
+// Old behaviour: just clean the completion, don't try to re-parse conversation
+function extractAssistantAnswer(_userMsg: string, completion: string): string {
+  return cleanAnswer(completion.trim());
 }
 
+// Train LUT with the same chat formatting as Python CLI / old UI:
+// - label_context is wrapped with buildMistralChatPrefix(question)
+// - label is the raw answer
 async function trainLut(
   lutName: string,
   label: string,
   labelContext: string | null,
-  wnnBlocks: number[]
+  wnnBlocks: number[],
+  threshold: number,
+  residuals: number[]
 ) {
-  const wrappedLabel = `[INST]${label}[/INST]`;
-  const wrappedContext = labelContext ? `${labelContext}</s>` : null;
   const payload = {
-    label: wrappedLabel,
-    label_context: wrappedContext,
+    label: label.trim(),
+    label_context: labelContext ? buildMistralChatPrefix(labelContext) : null,
     lut_name: lutName,
     model: MODEL,
     wnn_blocks: wnnBlocks,
+    threshold,
+    residuals,
     sparsity: 1.0,
+    cost_scale: 5,
   };
   const res = await fetch(`${BASE_URL}/train_lut`, {
     method: "POST",
@@ -165,6 +174,8 @@ async function trainLut(
   return json;
 }
 
+// Generate using the same chat prefix as the old code:
+// prompt = [INST] SYSTEM_PROMPT + "\n\n" + user_message [/INST]
 async function generateFromApi(
   lutName: string,
   userMsg: string,
@@ -172,8 +183,8 @@ async function generateFromApi(
   wnnBlocks: number[],
   residuals: number[]
 ): Promise<GenerateResponse> {
-  const basePrompt = `User: ${userMsg}\nAssistant:`;
-  const prompt = `[INST]${basePrompt}[/INST]`;
+  const prompt = buildMistralChatPrefix(userMsg);
+
   const payload = {
     prompt,
     length: GEN_LENGTH,
@@ -184,11 +195,13 @@ async function generateFromApi(
     wnn_blocks: wnnBlocks,
     cost_scale: 5,
   };
+
   const res = await fetch(`${BASE_URL}/generate`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
+
   const json = (await res.json().catch(() => ({}))) as GenerateResponse & {
     error?: string;
     detail?: string;
@@ -258,9 +271,8 @@ export default function LutDemo() {
 
   // Scroll to top when component mounts - use multiple methods to ensure it works
   useLayoutEffect(() => {
-    // Use requestAnimationFrame to ensure this runs after all rendering
     requestAnimationFrame(() => {
-      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
       window.scrollTo(0, 0);
       document.documentElement.scrollTop = 0;
       document.body.scrollTop = 0;
@@ -270,21 +282,17 @@ export default function LutDemo() {
   // Also scroll to top in useEffect as backup
   useEffect(() => {
     const scrollToTop = () => {
-      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
       window.scrollTo(0, 0);
       document.documentElement.scrollTop = 0;
       document.body.scrollTop = 0;
     };
-    
-    // Immediate scroll
+
     scrollToTop();
-    
-    // Also try after a small delay to override any other scroll operations
     const timer = setTimeout(scrollToTop, 50);
-    
-    // Mark initial mount as complete
+
     isInitialMount.current = false;
-    
+
     return () => clearTimeout(timer);
   }, []);
 
@@ -311,14 +319,12 @@ export default function LutDemo() {
     setTeachOpen(false);
     setTeachQuestion("");
     setTeachAnswer("");
-    // Reset chat ID when clearing messages
     if (isAuthenticated) {
       setCurrentChatId(null);
     }
   };
 
   const applyPretrainedConfig = (config: PretrainedLutConfig) => {
-    setLutName(config.lutName);
     setAvailableBlocks([...config.blocks]);
     setWnnBlocks([...config.blocks]);
     setResidualMap({ ...config.residualMap });
@@ -331,7 +337,6 @@ export default function LutDemo() {
       applyPretrainedConfig(config);
       return;
     }
-    setLutName(name);
     setAvailableBlocks([...DEFAULT_NEW_LUT_BLOCKS]);
     setWnnBlocks([...DEFAULT_NEW_LUT_BLOCKS]);
     setResidualMap({ ...DEFAULT_NEW_LUT_RESIDUALS });
@@ -359,22 +364,19 @@ export default function LutDemo() {
       try {
         chatId = await createChat(user.id, trimmed.substring(0, 50));
         setCurrentChatId(chatId);
-        // Update chat title with first message if it's long enough
         if (trimmed.length > 20) {
           updateChatTitle(chatId, trimmed.substring(0, 50));
         }
       } catch (error) {
-        console.error('Failed to create chat:', error);
-        // Continue without saving if chat creation fails
+        console.error("Failed to create chat:", error);
       }
     }
 
-    // Save user message to database if authenticated
     if (isAuthenticated && chatId) {
       try {
-        await saveMessage(chatId, 'user', trimmed);
+        await saveMessage(chatId, "user", trimmed);
       } catch (error) {
-        console.error('Failed to save user message:', error);
+        console.error("Failed to save user message:", error);
       }
     }
 
@@ -397,12 +399,11 @@ export default function LutDemo() {
       };
       setMessages((prev) => [...prev, assistantMsg]);
 
-      // Save assistant message to database if authenticated
       if (isAuthenticated && chatId) {
         try {
-          await saveMessage(chatId, 'assistant', assistantText);
+          await saveMessage(chatId, "assistant", assistantText);
         } catch (error) {
-          console.error('Failed to save assistant message:', error);
+          console.error("Failed to save assistant message:", error);
         }
       }
     } catch (err: any) {
@@ -429,7 +430,9 @@ export default function LutDemo() {
 
   const handleTeach = async () => {
     if (isReadOnlyLut) {
-      setStatus("This is a pre-trained demo. Create a new LUT to teach custom knowledge.");
+      setStatus(
+        "This is a pre-trained demo. Create a new LUT to teach custom knowledge."
+      );
       return;
     }
     const q = teachQuestion.trim();
@@ -438,12 +441,20 @@ export default function LutDemo() {
       setStatus("Please provide both a question and an answer.");
       return;
     }
-    const label_context = `User: ${q}\nAssistant: `;
-    const label = a;
+
     setStatus("Teaching custom knowledge...");
     try {
-      await trainLut(lutName, label, label_context, wnnBlocks);
-      setStatus("Knowledge stored successfully! The model will now remember this.");
+      await trainLut(
+        lutName,
+        a,
+        q,
+        wnnBlocks,
+        threshold,
+        currentResiduals
+      );
+      setStatus(
+        "Knowledge stored successfully! The model will now remember this."
+      );
       setTeachQuestion("");
       setTeachAnswer("");
       setTeachOpen(false);
@@ -510,9 +521,9 @@ export default function LutDemo() {
         variants={fadeIn()}
       >
         <div className="absolute inset-0">
-          <img 
-            src="/futuristic_ai_techno_65818c05.jpg" 
-            alt="AI Technology Background" 
+          <img
+            src="/futuristic_ai_techno_65818c05.jpg"
+            alt="AI Technology Background"
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/30 to-background/50" />
@@ -533,14 +544,18 @@ export default function LutDemo() {
             </h1>
 
             <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
-              Chat with our LUT-enhanced Mistral model. The AI has been trained with Astarus-specific
-              knowledge that it can recall instantly without traditional fine-tuning.
+              Chat with our LUT-enhanced Mistral model. The AI has been trained
+              with Astarus-specific knowledge that it can recall instantly
+              without traditional fine-tuning.
             </p>
 
             <div className="px-4 py-3 rounded-lg bg-amber-50/80 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 max-w-2xl mx-auto">
               <p className="text-sm text-amber-800 dark:text-amber-200">
                 <strong>Demo only</strong> – To create your own brain,{" "}
-                <Link to="/signup" className="underline font-semibold hover:text-amber-900 dark:hover:text-amber-100">
+                <Link
+                  to="/signup"
+                  className="underline font-semibold hover:text-amber-900 dark:hover:text-amber-100"
+                >
                   sign up
                 </Link>
                 .
@@ -556,7 +571,9 @@ export default function LutDemo() {
               <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-card border shadow-sm">
                 <Zap className="w-4 h-4 text-secondary" />
                 <span className="text-muted-foreground">LUT: </span>
-                <span className="font-mono font-semibold text-foreground">{lutName}</span>
+                <span className="font-mono font-semibold text-foreground">
+                  {lutName}
+                </span>
                 {isReadOnlyLut && (
                   <span className="px-2 py-0.5 text-xs rounded-full bg-primary/10 text-primary border border-primary/20">
                     Demo
@@ -577,10 +594,7 @@ export default function LutDemo() {
       >
         <div className="container max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <motion.div
-              className="lg:col-span-2"
-              variants={fadeInUp(0.1)}
-            >
+            <motion.div className="lg:col-span-2" variants={fadeInUp(0.1)}>
               <Card className="overflow-hidden border-0 shadow-xl bg-card/80 backdrop-blur-sm">
                 <div className="p-4 sm:p-6 border-b bg-gradient-to-r from-primary/5 via-transparent to-secondary/5">
                   <div className="flex items-center justify-between">
@@ -590,7 +604,9 @@ export default function LutDemo() {
                       </div>
                       <div>
                         <h2 className="font-bold text-foreground">AI Chat</h2>
-                        <p className="text-sm text-muted-foreground">Powered by Memory-Augmented LUT</p>
+                        <p className="text-sm text-muted-foreground">
+                          Powered by Memory-Augmented LUT
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -617,9 +633,12 @@ export default function LutDemo() {
                       <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center mb-6">
                         <Bot className="w-10 h-10 text-primary" />
                       </div>
-                      <h3 className="text-xl font-bold text-foreground mb-2">Start a Conversation</h3>
+                      <h3 className="text-xl font-bold text-foreground mb-2">
+                        Start a Conversation
+                      </h3>
                       <p className="text-muted-foreground mb-6 max-w-md">
-                        Ask me about Astarus AI, our technology, or try teaching me something new.
+                        Ask me about Astarus AI, our technology, or try teaching
+                        me something new.
                       </p>
                       <div className="flex flex-wrap justify-center gap-2">
                         {suggestedQuestions.map((q, i) => (
@@ -641,15 +660,29 @@ export default function LutDemo() {
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -20 }}
-                          className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}
+                          className={`flex ${
+                            m.role === "user"
+                              ? "justify-end"
+                              : "justify-start"
+                          }`}
                         >
-                          <div className={`flex items-start gap-3 max-w-[85%] ${m.role === "user" ? "flex-row-reverse" : ""}`}>
-                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                              m.role === "user"
-                                ? "bg-gradient-primary text-white"
-                                : "bg-muted text-muted-foreground"
-                            }`}>
-                              {m.role === "user" ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+                          <div
+                            className={`flex items-start gap-3 max-w-[85%] ${
+                              m.role === "user" ? "flex-row-reverse" : ""
+                            }`}
+                          >
+                            <div
+                              className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                                m.role === "user"
+                                  ? "bg-gradient-primary text-white"
+                                  : "bg-muted text-muted-foreground"
+                              }`}
+                            >
+                              {m.role === "user" ? (
+                                <User className="w-4 h-4" />
+                              ) : (
+                                <Bot className="w-4 h-4" />
+                              )}
                             </div>
                             <div
                               className={`rounded-2xl px-4 py-3 text-sm whitespace-pre-wrap ${
@@ -695,7 +728,9 @@ export default function LutDemo() {
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       className={`mb-3 px-4 py-2 rounded-lg text-sm ${
-                        status.includes("success") || status.includes("stored")
+                        status.includes("success") ||
+                        status.includes("stored") ||
+                        status.includes("Stored this Q&A")
                           ? "bg-green-50 text-green-700 border border-green-200"
                           : "bg-amber-50 text-amber-700 border border-amber-200"
                       }`}
@@ -768,7 +803,9 @@ export default function LutDemo() {
                         className="w-full rounded-lg border-2 border-muted bg-background px-3 py-2.5 text-sm focus:outline-none focus:border-primary/50 transition-colors"
                         value={selectedPretrainedValue}
                         onChange={(e) => {
-                          const config = PRETRAINED_LUTS.find((p) => p.lutName === e.target.value);
+                          const config = PRETRAINED_LUTS.find(
+                            (p) => p.lutName === e.target.value
+                          );
                           if (config) applyPretrainedConfig(config);
                         }}
                       >
@@ -786,7 +823,9 @@ export default function LutDemo() {
                         <div className="w-full border-t border-muted" />
                       </div>
                       <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-card px-2 text-muted-foreground">or load custom</span>
+                        <span className="bg-card px-2 text-muted-foreground">
+                          or load custom
+                        </span>
                       </div>
                     </div>
 
@@ -822,7 +861,11 @@ export default function LutDemo() {
                       className="gap-1"
                     >
                       {teachOpen ? "Close" : "Expand"}
-                      <ChevronDown className={`w-4 h-4 transition-transform ${teachOpen ? "rotate-180" : ""}`} />
+                      <ChevronDown
+                        className={`w-4 h-4 transition-transform ${
+                          teachOpen ? "rotate-180" : ""
+                        }`}
+                      />
                     </Button>
                   </div>
 
@@ -838,12 +881,15 @@ export default function LutDemo() {
                           <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-50 border border-amber-200">
                             <Info className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
                             <p className="text-xs text-amber-700">
-                              This is a read-only demo LUT. Create a new LUT to add custom knowledge.
+                              This is a read-only demo LUT. Create a new LUT to
+                              add custom knowledge.
                             </p>
                           </div>
                         )}
                         <div className="space-y-2">
-                          <label className="text-xs font-medium text-muted-foreground">Question</label>
+                          <label className="text-xs font-medium text-muted-foreground">
+                            Question
+                          </label>
                           <input
                             type="text"
                             className="w-full rounded-lg border-2 border-muted bg-background px-3 py-2 text-sm focus:outline-none focus:border-primary/50 transition-colors"
@@ -854,7 +900,9 @@ export default function LutDemo() {
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-xs font-medium text-muted-foreground">Answer</label>
+                          <label className="text-xs font-medium text-muted-foreground">
+                            Answer
+                          </label>
                           <textarea
                             className="w-full rounded-lg border-2 border-muted bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:border-primary/50 transition-colors"
                             rows={2}
@@ -866,7 +914,11 @@ export default function LutDemo() {
                         </div>
                         <Button
                           onClick={handleTeach}
-                          disabled={isReadOnlyLut || !teachQuestion.trim() || !teachAnswer.trim()}
+                          disabled={
+                            isReadOnlyLut ||
+                            !teachQuestion.trim() ||
+                            !teachAnswer.trim()
+                          }
                           className="w-full bg-gradient-secondary hover:opacity-90 text-white"
                         >
                           <Sparkles className="w-4 h-4 mr-2" />
@@ -878,7 +930,8 @@ export default function LutDemo() {
 
                   {!teachOpen && (
                     <p className="text-sm text-muted-foreground">
-                      Add custom Q&A pairs to personalize the model's responses in real-time.
+                      Add custom Q&A pairs to personalize the model's responses
+                      in real-time.
                     </p>
                   )}
                 </Card>
@@ -894,9 +947,15 @@ export default function LutDemo() {
                       <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center">
                         <Sliders className="w-4 h-4 text-muted-foreground" />
                       </div>
-                      <h3 className="font-bold text-foreground">Advanced Settings</h3>
+                      <h3 className="font-bold text-foreground">
+                        Advanced Settings
+                      </h3>
                     </div>
-                    <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${showAdvanced ? "rotate-180" : ""}`} />
+                    <ChevronDown
+                      className={`w-4 h-4 text-muted-foreground transition-transform ${
+                        showAdvanced ? "rotate-180" : ""
+                      }`}
+                    />
                   </button>
 
                   <AnimatePresence>
@@ -909,8 +968,12 @@ export default function LutDemo() {
                       >
                         <div className="space-y-2">
                           <div className="flex items-center justify-between">
-                            <label className="text-xs font-medium text-muted-foreground">Threshold</label>
-                            <span className="text-xs font-mono text-foreground">{threshold.toFixed(2)}</span>
+                            <label className="text-xs font-medium text-muted-foreground">
+                              Threshold
+                            </label>
+                            <span className="text-xs font-mono text-foreground">
+                              {threshold.toFixed(2)}
+                            </span>
                           </div>
                           <input
                             type="range"
@@ -918,13 +981,17 @@ export default function LutDemo() {
                             max="1"
                             step="0.01"
                             value={threshold}
-                            onChange={(e) => setThreshold(parseFloat(e.target.value))}
+                            onChange={(e) =>
+                              setThreshold(parseFloat(e.target.value))
+                            }
                             className="w-full h-2 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
                           />
                         </div>
 
                         <div className="space-y-2">
-                          <label className="text-xs font-medium text-muted-foreground">Active Blocks</label>
+                          <label className="text-xs font-medium text-muted-foreground">
+                            Active Blocks
+                          </label>
                           <div className="flex flex-wrap gap-2">
                             {availableBlocks.map((block) => (
                               <div
@@ -936,7 +1003,9 @@ export default function LutDemo() {
                                 }`}
                                 onClick={() => toggleBlock(block)}
                               >
-                                {wnnBlocks.includes(block) && <Check className="w-3 h-3" />}
+                                {wnnBlocks.includes(block) && (
+                                  <Check className="w-3 h-3" />
+                                )}
                                 Block {block}
                                 {!isReadOnlyLut && (
                                   <button
@@ -963,7 +1032,11 @@ export default function LutDemo() {
                               value={newBlockInput}
                               onChange={(e) => setNewBlockInput(e.target.value)}
                             />
-                            <Button onClick={handleAddBlock} size="sm" variant="outline">
+                            <Button
+                              onClick={handleAddBlock}
+                              size="sm"
+                              variant="outline"
+                            >
                               <Plus className="w-4 h-4" />
                             </Button>
                           </div>
@@ -971,12 +1044,20 @@ export default function LutDemo() {
 
                         {wnnBlocks.length > 0 && (
                           <div className="space-y-3">
-                            <label className="text-xs font-medium text-muted-foreground">Block Residuals</label>
+                            <label className="text-xs font-medium text-muted-foreground">
+                              Block Residuals
+                            </label>
                             {wnnBlocks.map((block) => (
                               <div key={block} className="space-y-1">
                                 <div className="flex justify-between text-xs">
-                                  <span className="font-mono">Block {block}</span>
-                                  <span className="font-mono">{(residualMap[String(block)] ?? 1.0).toFixed(2)}</span>
+                                  <span className="font-mono">
+                                    Block {block}
+                                  </span>
+                                  <span className="font-mono">
+                                    {(
+                                      residualMap[String(block)] ?? 1.0
+                                    ).toFixed(2)}
+                                  </span>
                                 </div>
                                 <input
                                   type="range"
@@ -984,7 +1065,12 @@ export default function LutDemo() {
                                   max="2"
                                   step="0.05"
                                   value={residualMap[String(block)] ?? 1.0}
-                                  onChange={(e) => handleResidualChange(block, parseFloat(e.target.value))}
+                                  onChange={(e) =>
+                                    handleResidualChange(
+                                      block,
+                                      parseFloat(e.target.value)
+                                    )
+                                  }
                                   disabled={isReadOnlyLut}
                                   className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary disabled:opacity-50"
                                 />
@@ -1006,16 +1092,28 @@ export default function LutDemo() {
                   </div>
                   <ul className="space-y-2 text-sm text-muted-foreground">
                     <li className="flex items-start gap-2">
-                      <span className="w-5 h-5 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
-                      <span>LUT stores knowledge as embedding corrections</span>
+                      <span className="w-5 h-5 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center flex-shrink-0 mt-0.5">
+                        1
+                      </span>
+                      <span>
+                        LUT stores knowledge as embedding corrections
+                      </span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="w-5 h-5 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
-                      <span>During inference, relevant corrections are retrieved</span>
+                      <span className="w-5 h-5 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center flex-shrink-0 mt-0.5">
+                        2
+                      </span>
+                      <span>
+                        During inference, relevant corrections are retrieved
+                      </span>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="w-5 h-5 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
-                      <span>Model outputs are steered toward learned behavior</span>
+                      <span className="w-5 h-5 rounded-full bg-primary/10 text-primary text-xs flex items-center justify-center flex-shrink-0 mt-0.5">
+                        3
+                      </span>
+                      <span>
+                        Model outputs are steered toward learned behavior
+                      </span>
                     </li>
                   </ul>
                 </Card>

@@ -1,21 +1,44 @@
-import { useState, useMemo, useRef, useEffect, useLayoutEffect } from "react";
+import {
+  useState,
+  useRef,
+  useEffect,
+  useLayoutEffect,
+} from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Send,
-  Bot,
-  User,
-  RefreshCw,
-  Info,
-} from "lucide-react";
+import { Send, Bot, User, RefreshCw, Info } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { fadeIn, fadeInUp, staggerContainer } from "@/lib/motion";
+import { fadeIn } from "@/lib/motion";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://dhzzxfr41qjcz7-8000.proxy.runpod.net";
+const BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ||
+  "https://dhzzxfr41qjcz7-8000.proxy.runpod.net";
 const MODEL = import.meta.env.VITE_API_MODEL || "mistral";
+
+// Reuse same style of system prompt so behaviour matches main demo
+const SYSTEM_PROMPT =
+  "You are Astara, a friendly conversational AI assistant running on a " +
+  "LUT-augmented Mistral model created by Astarus AI. " +
+  "You are an expert on Astarus AI and have been fine-tuned on information on it. " +
+  "Astarus AI is an AI startup which focuses on building continuously trainable LLMs through LUT (look up table) based LLMs. " +
+  "You answer like a chat, not like an email. " +
+  "Be concise and informal. " +
+  "If the user just greets you or says thanks, reply briefly and naturally.";
+
+function buildMistralChatPrefix(
+  userMessage: string,
+  systemPrompt: string = SYSTEM_PROMPT
+): string {
+  const trimmedUser = userMessage.trim();
+  const content = systemPrompt
+    ? `${systemPrompt.trim()}\n\n${trimmedUser}`
+    : trimmedUser;
+
+  return `[INST] ${content} [/INST]`;
+}
 
 type Message = {
   id: string;
@@ -29,10 +52,10 @@ type GenerateResponse = {
   threshold?: number;
 };
 
-const DEFAULT_THRESHOLD = 0.25;
-const GEN_LENGTH = 128;
+const DEFAULT_THRESHOLD = 0.45;
+const GEN_LENGTH = 300;
 const DEFAULT_BLOCKS = [-1, -4];
-const DEFAULT_RESIDUALS = [0.75, 0.25];
+const DEFAULT_RESIDUALS = [0.2, 0.25];
 
 function cleanAnswer(raw: string): string {
   let text = raw;
@@ -52,33 +75,9 @@ function cleanAnswer(raw: string): string {
   return text.trim();
 }
 
-function extractAssistantAnswer(userMsg: string, completion: string): string {
-  const patternUser = `User: ${userMsg}`;
-  let text: string = completion;
-  const idxUser = completion.indexOf(patternUser);
-  if (idxUser !== -1) {
-    text = completion.slice(idxUser + patternUser.length);
-  }
-  const idxAssistant = text.indexOf("Assistant:");
-  if (idxAssistant !== -1) {
-    text = text.slice(idxAssistant + "Assistant:".length);
-  }
-  let answer = text.trim();
-  const cutMarkers = ["[INST]", "User:", "Assistant:"];
-  let cutIdx = answer.length;
-  for (const marker of cutMarkers) {
-    const i = answer.indexOf(marker);
-    if (i !== -1 && i < cutIdx) {
-      cutIdx = i;
-    }
-  }
-  if (cutIdx !== answer.length) {
-    answer = answer.slice(0, cutIdx).trim();
-  }
-  if (!answer) {
-    return cleanAnswer(completion.trim());
-  }
-  return cleanAnswer(answer);
+// Same simple extraction as old code
+function extractAssistantAnswer(_userMsg: string, completion: string): string {
+  return cleanAnswer(completion.trim());
 }
 
 async function generateFromApi(
@@ -88,8 +87,8 @@ async function generateFromApi(
   wnnBlocks: number[],
   residuals: number[]
 ): Promise<GenerateResponse> {
-  const basePrompt = `User: ${userMsg}\nAssistant:`;
-  const prompt = `[INST]${basePrompt}[/INST]`;
+  const prompt = buildMistralChatPrefix(userMsg);
+
   const payload = {
     prompt,
     length: GEN_LENGTH,
@@ -100,6 +99,7 @@ async function generateFromApi(
     wnn_blocks: wnnBlocks,
     cost_scale: 5,
   };
+
   const res = await fetch(`${BASE_URL}/generate`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -127,9 +127,8 @@ export default function SpaceChat() {
 
   // Scroll to top when component mounts - use multiple methods to ensure it works
   useLayoutEffect(() => {
-    // Use requestAnimationFrame to ensure this runs after all rendering
     requestAnimationFrame(() => {
-      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
       window.scrollTo(0, 0);
       document.documentElement.scrollTop = 0;
       document.body.scrollTop = 0;
@@ -139,21 +138,17 @@ export default function SpaceChat() {
   // Also scroll to top in useEffect as backup
   useEffect(() => {
     const scrollToTop = () => {
-      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
       window.scrollTo(0, 0);
       document.documentElement.scrollTop = 0;
       document.body.scrollTop = 0;
     };
-    
-    // Immediate scroll
+
     scrollToTop();
-    
-    // Also try after a small delay to override any other scroll operations
     const timer = setTimeout(scrollToTop, 50);
-    
-    // Mark initial mount as complete
+
     isInitialMount.current = false;
-    
+
     return () => clearTimeout(timer);
   }, []);
 
@@ -224,7 +219,10 @@ export default function SpaceChat() {
               </div>
               <div className="flex items-center gap-2 text-sm text-white/70">
                 <Info className="w-4 h-4" />
-                <span>This brain has its own memory. Corrections only affect this space.</span>
+                <span>
+                  This brain has its own memory. Corrections only affect this
+                  space.
+                </span>
               </div>
             </div>
 
@@ -235,7 +233,9 @@ export default function SpaceChat() {
                     <div className="flex items-center justify-center h-full text-center">
                       <div className="space-y-4">
                         <Bot className="w-16 h-16 mx-auto text-white/30" />
-                        <p className="text-white/70">Start a conversation with your AI brain</p>
+                        <p className="text-white/70">
+                          Start a conversation with your AI brain
+                        </p>
                       </div>
                     </div>
                   ) : (
@@ -247,7 +247,9 @@ export default function SpaceChat() {
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: index * 0.1 }}
                           className={`flex gap-4 ${
-                            message.role === "user" ? "justify-end" : "justify-start"
+                            message.role === "user"
+                              ? "justify-end"
+                              : "justify-start"
                           }`}
                         >
                           {message.role === "assistant" && (
@@ -262,7 +264,9 @@ export default function SpaceChat() {
                                 : "bg-white/10 text-white glass-dark"
                             }`}
                           >
-                            <p className="whitespace-pre-wrap">{message.content}</p>
+                            <p className="whitespace-pre-wrap">
+                              {message.content}
+                            </p>
                           </div>
                           {message.role === "user" && (
                             <div className="w-8 h-8 rounded-full bg-gradient-secondary flex items-center justify-center flex-shrink-0">
@@ -335,4 +339,3 @@ export default function SpaceChat() {
     </div>
   );
 }
-

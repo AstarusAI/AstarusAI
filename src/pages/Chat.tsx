@@ -95,9 +95,9 @@ const PRETRAINED_LUTS: PretrainedLutConfig[] = [
     lutName: DEMO_LUT_NAME,
     blocks: [-1, -5, -9],
     residualMap: {
-      "-1": 0.05,
-      "-5": 0.1,
-      "-9": 0.1,
+      "-1": 0.04,
+      "-5": 0.07,
+      "-9": 0.07,
     },
     readOnly: true,
   },
@@ -227,8 +227,8 @@ const initialPretrained = PRETRAINED_LUTS[0];
 const suggestedQuestions = [
   "What does Astarus AI do?",
   "Who founded Astarus AI?",
-  "How does memory augmentation work?",
-  "What makes Astarus AI's technology unique?",
+  "How does Astarus AI's memory augmentation work?",
+  "What makes Astarus AI's technology different?",
 ];
 
 export default function LutDemo() {

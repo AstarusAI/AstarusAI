@@ -53,6 +53,39 @@ const interestOptions = [
 
 export default function Contact() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [company, setCompany] = useState("");
+  const [interest, setInterest] = useState("Investment Opportunities");
+  const [message, setMessage] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Create email subject
+    const subject = encodeURIComponent(`Contact Form: ${interest} - ${firstName} ${lastName}`);
+    
+    // Create email body with all form data
+    const body = encodeURIComponent(
+      `Hello,\n\n` +
+      `I would like to get in touch regarding: ${interest}\n\n` +
+      `--- Contact Information ---\n` +
+      `Name: ${firstName} ${lastName}\n` +
+      `Email: ${email}\n` +
+      `${company ? `Company: ${company}\n` : ''}` +
+      `\n--- Message ---\n` +
+      `${message}\n\n` +
+      `Best regards,\n` +
+      `${firstName} ${lastName}`
+    );
+    
+    // Create mailto link
+    const mailtoLink = `mailto:rafayel.latif@gmail.com?subject=${subject}&body=${body}`;
+    
+    // Open email client
+    window.location.href = mailtoLink;
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -170,13 +203,16 @@ export default function Contact() {
                   </div>
                 </div>
 
-                <form className="space-y-6">
+                <form className="space-y-6" onSubmit={handleSubmit}>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-foreground">First Name</label>
                       <Input 
                         placeholder="John" 
                         className="h-12 border-2 focus:border-primary/50"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        required
                       />
                     </div>
                     <div className="space-y-2">
@@ -184,6 +220,9 @@ export default function Contact() {
                       <Input 
                         placeholder="Doe" 
                         className="h-12 border-2 focus:border-primary/50"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        required
                       />
                     </div>
                   </div>
@@ -194,6 +233,9 @@ export default function Contact() {
                       type="email" 
                       placeholder="john@example.com" 
                       className="h-12 border-2 focus:border-primary/50"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
                     />
                   </div>
 
@@ -202,14 +244,21 @@ export default function Contact() {
                     <Input 
                       placeholder="Your company name" 
                       className="h-12 border-2 focus:border-primary/50"
+                      value={company}
+                      onChange={(e) => setCompany(e.target.value)}
                     />
                   </div>
 
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-foreground">I'm interested in...</label>
-                    <select className="w-full h-12 px-4 border-2 border-input rounded-lg bg-background focus:outline-none focus:border-primary/50 transition-colors">
+                    <select 
+                      className="w-full h-12 px-4 border-2 border-input rounded-lg bg-background focus:outline-none focus:border-primary/50 transition-colors"
+                      value={interest}
+                      onChange={(e) => setInterest(e.target.value)}
+                      required
+                    >
                       {interestOptions.map((option) => (
-                        <option key={option}>{option}</option>
+                        <option key={option} value={option}>{option}</option>
                       ))}
                     </select>
                   </div>
@@ -220,6 +269,9 @@ export default function Contact() {
                       placeholder="Tell us about your interest in Astarus..."
                       rows={5}
                       className="border-2 focus:border-primary/50 resize-none"
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      required
                     />
                   </div>
 

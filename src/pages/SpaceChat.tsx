@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect, useLayoutEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -123,9 +123,45 @@ export default function SpaceChat() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const isInitialMount = useRef(true);
 
+  // Scroll to top when component mounts - use multiple methods to ensure it works
+  useLayoutEffect(() => {
+    // Use requestAnimationFrame to ensure this runs after all rendering
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    });
+  }, []);
+
+  // Also scroll to top in useEffect as backup
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const scrollToTop = () => {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    };
+    
+    // Immediate scroll
+    scrollToTop();
+    
+    // Also try after a small delay to override any other scroll operations
+    const timer = setTimeout(scrollToTop, 50);
+    
+    // Mark initial mount as complete
+    isInitialMount.current = false;
+    
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Only scroll to messages end when there are actual messages (not on initial mount)
+  useEffect(() => {
+    if (messages.length > 0 && !isInitialMount.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   }, [messages]);
 
   if (!lut_name) {
@@ -174,7 +210,7 @@ export default function SpaceChat() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <div className="flex-1 flex flex-col bg-gradient-to-b from-black via-primary/5 to-black">
+      <div className="flex-1 flex flex-col bg-gradient-to-b from-black via-primary/5 to-black pt-24">
         <div className="container mx-auto px-4 py-8 flex-1 flex flex-col max-w-5xl">
           <motion.div
             initial="hidden"

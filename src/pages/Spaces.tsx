@@ -12,16 +12,17 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 import { fadeInUp, staggerContainer } from "@/lib/motion";
-import { Plus, Brain, Building2, User, ArrowRight } from "lucide-react";
-
-interface Space {
-  id: string;
-  lut_name: string;
-  name: string;
-  type: "company" | "personal";
-  description?: string;
-  created_at: string;
-}
+import { Plus, Brain, Building2, User, ArrowRight, Mail, Users, X } from "lucide-react";
+import { 
+  getUserSpaces, 
+  createSpace, 
+  deleteSpace, 
+  inviteToSpace, 
+  getSpaceMembers, 
+  removeMember,
+  type Space,
+  type SpaceMember 
+} from "@/lib/spaceService";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://dhzzxfr41qjcz7-8000.proxy.runpod.net";
 
@@ -35,59 +36,48 @@ export default function Spaces() {
   const [newSpaceType, setNewSpaceType] = useState<"company" | "personal">("personal");
   const [newSpaceDescription, setNewSpaceDescription] = useState("");
   const [creating, setCreating] = useState(false);
+  const [inviteOpen, setInviteOpen] = useState<string | null>(null);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviting, setInviting] = useState(false);
+  const [spaceMembers, setSpaceMembers] = useState<Record<string, SpaceMember[]>>({});
+  const [membersOpen, setMembersOpen] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !user) {
       navigate("/login");
       return;
     }
     loadSpaces();
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, user, navigate]);
 
   const loadSpaces = async () => {
+    if (!user) return;
+    
     try {
-      // TODO: Replace with actual API call
-      // For now, use mock data
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      setSpaces([
-        // Mock spaces - replace with API call
-      ]);
-    } catch (error) {
+      setLoading(true);
+      const userSpaces = await getUserSpaces(user.id, user.email || '');
+      setSpaces(userSpaces);
+    } catch (error: any) {
       console.error("Failed to load spaces:", error);
+      alert(error.message || "Failed to load spaces");
     } finally {
       setLoading(false);
     }
   };
 
   const handleCreateSpace = async () => {
-    if (!newSpaceName.trim()) return;
+    if (!newSpaceName.trim() || !user) return;
 
     setCreating(true);
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch(`${BASE_URL}/spaces`, {
-      //   method: "POST",
-      //   headers: { "Content-Type": "application/json" },
-      //   body: JSON.stringify({
-      //     name: newSpaceName,
-      //     type: newSpaceType,
-      //     description: newSpaceDescription || null,
-      //   }),
-      // });
-      // const data = await response.json();
+      const newSpace = await createSpace(
+        user.id,
+        newSpaceName,
+        newSpaceType,
+        newSpaceDescription || undefined
+      );
 
-      // Mock API response
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      const newSpace: Space = {
-        id: crypto.randomUUID(),
-        lut_name: `space-${crypto.randomUUID().slice(0, 8)}`,
-        name: newSpaceName,
-        type: newSpaceType,
-        description: newSpaceDescription || undefined,
-        created_at: new Date().toISOString(),
-      };
-
-      setSpaces([...spaces, newSpace]);
+      setSpaces([newSpace, ...spaces]);
       setCreateOpen(false);
       setNewSpaceName("");
       setNewSpaceType("personal");
@@ -97,6 +87,70 @@ export default function Spaces() {
       alert(error.message || "Failed to create space");
     } finally {
       setCreating(false);
+    }
+  };
+
+  const handleDeleteSpace = async (spaceId: string) => {
+    if (!confirm("Are you sure you want to delete this space? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      await deleteSpace(spaceId);
+      setSpaces(spaces.filter(s => s.id !== spaceId));
+    } catch (error: any) {
+      console.error("Failed to delete space:", error);
+      alert(error.message || "Failed to delete space");
+    }
+  };
+
+  const handleInvite = async (spaceId: string) => {
+    if (!inviteEmail.trim() || !user) return;
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(inviteEmail)) {
+      alert("Please enter a valid email address");
+      return;
+    }
+
+    setInviting(true);
+    try {
+      await inviteToSpace(spaceId, inviteEmail, user.id);
+      alert(`Invitation sent to ${inviteEmail}`);
+      setInviteEmail("");
+      setInviteOpen(null);
+      // Reload members if dialog is open
+      if (membersOpen === spaceId) {
+        loadSpaceMembers(spaceId);
+      }
+    } catch (error: any) {
+      console.error("Failed to invite user:", error);
+      alert(error.message || "Failed to invite user");
+    } finally {
+      setInviting(false);
+    }
+  };
+
+  const loadSpaceMembers = async (spaceId: string) => {
+    try {
+      const members = await getSpaceMembers(spaceId);
+      setSpaceMembers(prev => ({ ...prev, [spaceId]: members }));
+    } catch (error: any) {
+      console.error("Failed to load members:", error);
+    }
+  };
+
+  const handleRemoveMember = async (memberId: string, spaceId: string) => {
+    if (!confirm("Are you sure you want to remove this member?")) {
+      return;
+    }
+
+    try {
+      await removeMember(memberId);
+      loadSpaceMembers(spaceId);
+    } catch (error: any) {
+      console.error("Failed to remove member:", error);
+      alert(error.message || "Failed to remove member");
     }
   };
 
@@ -131,9 +185,9 @@ export default function Spaces() {
                     Create New Space
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="glass-dark glass-border border-white/20 text-white">
+                <DialogContent className="glass-dark glass-border border-white/20 text-white bg-black/90 !left-1/2 !top-1/2 !-translate-x-1/2 !-translate-y-1/2">
                   <DialogHeader>
-                    <DialogTitle>Create New Space</DialogTitle>
+                    <DialogTitle className="text-white">Create New Space</DialogTitle>
                     <DialogDescription className="text-white/70">
                       A space is a named brain with its own memory. Each space has a unique identifier.
                     </DialogDescription>
@@ -236,13 +290,38 @@ export default function Spaces() {
                         {space.description && (
                           <p className="text-sm text-white/60 mb-4">{space.description}</p>
                         )}
-                        <Button
-                          onClick={() => navigate(`/spaces/${space.lut_name}`)}
-                          className="w-full bg-gradient-primary hover:opacity-90 text-white"
-                        >
-                          Open
-                          <ArrowRight className="w-4 h-4 ml-2" />
-                        </Button>
+                        <div className="space-y-2">
+                          <Button
+                            onClick={() => navigate(`/spaces/${space.lut_name}`)}
+                            className="w-full bg-gradient-primary hover:opacity-90 text-white"
+                          >
+                            Open
+                            <ArrowRight className="w-4 h-4 ml-2" />
+                          </Button>
+                          {space.creator_id === user?.id && (
+                            <>
+                              <Button
+                                onClick={() => {
+                                  setMembersOpen(space.id);
+                                  loadSpaceMembers(space.id);
+                                }}
+                                variant="outline"
+                                className="w-full border-white/20 text-white hover:bg-white/10"
+                              >
+                                <Users className="w-4 h-4 mr-2" />
+                                Members
+                              </Button>
+                              <Button
+                                onClick={() => handleDeleteSpace(space.id)}
+                                variant="outline"
+                                className="w-full border-red-500/50 text-red-400 hover:bg-red-500/10"
+                              >
+                                <X className="w-4 h-4 mr-2" />
+                                Delete
+                              </Button>
+                            </>
+                          )}
+                        </div>
                       </CardContent>
                     </Card>
                   </motion.div>
@@ -252,6 +331,79 @@ export default function Spaces() {
           </motion.div>
         </div>
       </div>
+
+      {/* Members Dialog */}
+      <Dialog open={membersOpen !== null} onOpenChange={(open) => !open && setMembersOpen(null)}>
+        <DialogContent className="glass-dark glass-border border-white/20 text-white bg-black/90 !left-1/2 !top-1/2 !-translate-x-1/2 !-translate-y-1/2 max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-white">Space Members</DialogTitle>
+            <DialogDescription className="text-white/70">
+              Manage members and invitations for this space
+            </DialogDescription>
+          </DialogHeader>
+          {membersOpen && (
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <Input
+                  type="email"
+                  placeholder="Enter email to invite"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && inviteEmail.trim()) {
+                      handleInvite(membersOpen);
+                    }
+                  }}
+                  className="bg-white/5 border-white/20 text-white"
+                />
+                <Button
+                  onClick={() => handleInvite(membersOpen)}
+                  disabled={inviting || !inviteEmail.trim()}
+                  className="bg-gradient-primary hover:opacity-90 text-white"
+                >
+                  <Mail className="w-4 h-4 mr-2" />
+                  {inviting ? "Inviting..." : "Invite"}
+                </Button>
+              </div>
+              <div className="max-h-64 overflow-y-auto space-y-2">
+                {spaceMembers[membersOpen]?.map((member) => (
+                  <div
+                    key={member.id}
+                    className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/10"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-gradient-primary flex items-center justify-center">
+                        <User className="w-4 h-4 text-white" />
+                      </div>
+                      <div>
+                        <p className="text-white font-medium">{member.email}</p>
+                        <p className="text-xs text-white/60 capitalize">
+                          {member.role} • {member.status}
+                        </p>
+                      </div>
+                    </div>
+                    {spaces.find(s => s.id === membersOpen)?.creator_id === user?.id && 
+                     member.role !== 'owner' && (
+                      <Button
+                        onClick={() => handleRemoveMember(member.id, membersOpen)}
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+                {(!spaceMembers[membersOpen] || spaceMembers[membersOpen].length === 0) && (
+                  <p className="text-center text-white/60 py-4">No members yet</p>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       <Footer />
     </div>
   );

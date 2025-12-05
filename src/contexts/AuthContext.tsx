@@ -1,4 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { supabase } from "@/lib/supabase";
+import { acceptInvitation, getPendingInvitations } from "@/lib/spaceService";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 interface User {
   id: string;
@@ -22,51 +25,112 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for stored auth token on mount
-    const storedUser = localStorage.getItem("astarus_user");
-    if (storedUser) {
+    // Check for Supabase session on mount
+    const initAuth = async () => {
       try {
-        setUser(JSON.parse(storedUser));
-      } catch (e) {
-        localStorage.removeItem("astarus_user");
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          setUser({
+            id: session.user.id,
+            email: session.user.email || '',
+            name: session.user.user_metadata?.name || session.user.email?.split("@")[0],
+          });
+        }
+      } catch (error) {
+        console.error("Error initializing auth:", error);
+      } finally {
+        setLoading(false);
       }
-    }
-    setLoading(false);
+    };
+
+    initAuth();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          const userEmail = session.user.email || '';
+          setUser({
+            id: session.user.id,
+            email: userEmail,
+            name: session.user.user_metadata?.name || userEmail.split("@")[0],
+          });
+          
+          // Auto-accept pending invitations (non-blocking, runs in background)
+          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+            // Don't await - let it run in background
+            getPendingInvitations(userEmail)
+              .then(async (invitations) => {
+                for (const invitation of invitations) {
+                  try {
+                    await acceptInvitation(invitation.space_id, session.user.id, userEmail);
+                  } catch (err) {
+                    console.error('Failed to accept invitation:', err);
+                  }
+                }
+              })
+              .catch((err) => {
+                console.error('Failed to check invitations:', err);
+              });
+          }
+        } else {
+          setUser(null);
+        }
+        setLoading(false);
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const login = async (email: string, password: string) => {
-    // TODO: Replace with actual API call
-    // For now, simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    
-    // Mock authentication - in production, this would call your backend
-    const mockUser: User = {
-      id: crypto.randomUUID(),
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
-      name: email.split("@")[0],
-    };
-    
-    setUser(mockUser);
-    localStorage.setItem("astarus_user", JSON.stringify(mockUser));
+      password,
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (data.user) {
+      setUser({
+        id: data.user.id,
+        email: data.user.email || '',
+        name: data.user.user_metadata?.name || email.split("@")[0],
+      });
+    }
   };
 
   const signup = async (email: string, password: string, name?: string) => {
-    // TODO: Replace with actual API call
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    
-    const mockUser: User = {
-      id: crypto.randomUUID(),
+    const { data, error } = await supabase.auth.signUp({
       email,
-      name: name || email.split("@")[0],
-    };
-    
-    setUser(mockUser);
-    localStorage.setItem("astarus_user", JSON.stringify(mockUser));
+      password,
+      options: {
+        data: {
+          name: name || email.split("@")[0],
+        },
+      },
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (data.user) {
+      setUser({
+        id: data.user.id,
+        email: data.user.email || '',
+        name: name || email.split("@")[0],
+      });
+    }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
-    localStorage.removeItem("astarus_user");
   };
 
   return (

@@ -25,6 +25,8 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { fadeIn, fadeInUp, staggerContainer } from "@/lib/motion";
+import { useAuth } from "@/contexts/AuthContext";
+import { createChat, saveMessage, updateChatTitle } from "@/lib/chatService";
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://dhzzxfr41qjcz7-8000.proxy.runpod.net";
 const MODEL = import.meta.env.VITE_API_MODEL || "mistral";
@@ -235,6 +237,8 @@ export default function LutDemo() {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isInitialMount = useRef(true);
+  const [currentChatId, setCurrentChatId] = useState<string | null>(null);
+  const { user, isAuthenticated } = useAuth();
 
   const hasMessages = useMemo(() => messages.length > 0, [messages.length]);
   const isReadOnlyLut = useMemo(
@@ -291,6 +295,13 @@ export default function LutDemo() {
     }
   }, [messages]);
 
+  // Create a new chat when user is authenticated and starts chatting
+  useEffect(() => {
+    if (isAuthenticated && user && !currentChatId && messages.length === 0) {
+      // Chat will be created when first message is sent
+    }
+  }, [isAuthenticated, user, currentChatId, messages.length]);
+
   const resetCommonState = (label?: string) => {
     setMessages([]);
     setStatus(label ?? null);
@@ -300,6 +311,10 @@ export default function LutDemo() {
     setTeachOpen(false);
     setTeachQuestion("");
     setTeachAnswer("");
+    // Reset chat ID when clearing messages
+    if (isAuthenticated) {
+      setCurrentChatId(null);
+    }
   };
 
   const applyPretrainedConfig = (config: PretrainedLutConfig) => {
@@ -338,6 +353,31 @@ export default function LutDemo() {
     setStatus(null);
     setIsGenerating(true);
 
+    // Create chat if user is authenticated and this is the first message
+    let chatId = currentChatId;
+    if (isAuthenticated && user && !chatId) {
+      try {
+        chatId = await createChat(user.id, trimmed.substring(0, 50));
+        setCurrentChatId(chatId);
+        // Update chat title with first message if it's long enough
+        if (trimmed.length > 20) {
+          updateChatTitle(chatId, trimmed.substring(0, 50));
+        }
+      } catch (error) {
+        console.error('Failed to create chat:', error);
+        // Continue without saving if chat creation fails
+      }
+    }
+
+    // Save user message to database if authenticated
+    if (isAuthenticated && chatId) {
+      try {
+        await saveMessage(chatId, 'user', trimmed);
+      } catch (error) {
+        console.error('Failed to save user message:', error);
+      }
+    }
+
     try {
       const resp = await generateFromApi(
         lutName,
@@ -356,6 +396,15 @@ export default function LutDemo() {
         content: assistantText,
       };
       setMessages((prev) => [...prev, assistantMsg]);
+
+      // Save assistant message to database if authenticated
+      if (isAuthenticated && chatId) {
+        try {
+          await saveMessage(chatId, 'assistant', assistantText);
+        } catch (error) {
+          console.error('Failed to save assistant message:', error);
+        }
+      }
     } catch (err: any) {
       setStatus(err?.message || "Generation failed");
     } finally {

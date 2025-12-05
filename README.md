@@ -22,9 +22,25 @@ Create a `.env` file in the root directory with the following variables:
 ```env
 VITE_API_BASE_URL=https://your-api-url-here.com
 VITE_API_MODEL=mistral
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key-here
 ```
 
-**Note:** If environment variables are not set, the application will use default values. Make sure to set these for production deployments.
+**Note:** 
+- If API environment variables are not set, the application will use default values.
+- Supabase variables are required for user authentication and chat storage. The app will work without them, but users won't be able to sign up or save their chats.
+
+### Supabase Setup
+
+1. Create a Supabase project at [supabase.com](https://supabase.com)
+2. Go to your project settings and copy:
+   - Project URL (for `VITE_SUPABASE_URL`)
+   - Anon/Public key (for `VITE_SUPABASE_ANON_KEY`)
+3. In your Supabase SQL Editor, run the SQL from `supabase-schema.sql` to create the necessary tables:
+   - `chats` - stores user chat sessions
+   - `messages` - stores individual messages in chats
+   - `user_memory` - stores user-specific memory/data
+4. The schema includes Row Level Security (RLS) policies to ensure users can only access their own data
 
 ### Development
 

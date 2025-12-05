@@ -76,26 +76,50 @@
 @layer base {
   * {
     @apply border-border;
-    scrollbar-width: thin;
-    scrollbar-color: hsl(var(--primary) / 0.3) transparent;
+    /* Hide scrollbar for Firefox */
+    scrollbar-width: none;
+    scrollbar-color: transparent transparent;
   }
 
+  /* Hide scrollbar for Chrome, Safari, and Edge */
   *::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    display: none;
+    width: 0;
+    height: 0;
   }
 
   *::-webkit-scrollbar-track {
+    display: none;
     background: transparent;
   }
 
   *::-webkit-scrollbar-thumb {
-    background: hsl(var(--primary) / 0.3);
-    border-radius: 3px;
+    display: none;
+    background: transparent;
   }
 
   *::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--primary) / 0.5);
+    display: none;
+    background: transparent;
+  }
+
+  /* Ensure scrolling still works */
+  html {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  html::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+
+  body {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  body::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
   }
 
   html {

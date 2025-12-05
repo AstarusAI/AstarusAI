@@ -31,9 +31,9 @@ export const Footer = () => {
             <div className="lg:col-span-2 space-y-6">
               <Link to="/" className="inline-flex items-center gap-2">
                 <img
-                  src="/Astarus Logo.jpeg"
+                  src="/Astarus AI No name logo.png"
                   alt="Astarus Logo"
-                  className="h-8 w-auto rounded-lg"
+                  className="h-16 w-auto rounded-lg"
                 />
                 <span className="text-2xl font-bold text-white">Astarus</span>
               </Link>

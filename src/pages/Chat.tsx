@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect, useLayoutEffect } from "react";
 import { Link } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -234,6 +234,7 @@ export default function LutDemo() {
   const [lastThresholdUsed, setLastThresholdUsed] = useState<number>();
   const [showAdvanced, setShowAdvanced] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const isInitialMount = useRef(true);
 
   const hasMessages = useMemo(() => messages.length > 0, [messages.length]);
   const isReadOnlyLut = useMemo(
@@ -251,8 +252,43 @@ export default function LutDemo() {
     [wnnBlocks, residualMap]
   );
 
+  // Scroll to top when component mounts - use multiple methods to ensure it works
+  useLayoutEffect(() => {
+    // Use requestAnimationFrame to ensure this runs after all rendering
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    });
+  }, []);
+
+  // Also scroll to top in useEffect as backup
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const scrollToTop = () => {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    };
+    
+    // Immediate scroll
+    scrollToTop();
+    
+    // Also try after a small delay to override any other scroll operations
+    const timer = setTimeout(scrollToTop, 50);
+    
+    // Mark initial mount as complete
+    isInitialMount.current = false;
+    
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Only scroll to messages end when there are actual messages (not on initial mount)
+  useEffect(() => {
+    if (messages.length > 0 && !isInitialMount.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   }, [messages]);
 
   const resetCommonState = (label?: string) => {
@@ -430,7 +466,7 @@ export default function LutDemo() {
             alt="AI Technology Background" 
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/95 via-background/85 to-background" />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/30 to-background/50" />
         </div>
         <div className="absolute top-20 right-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
         <div className="absolute bottom-0 left-1/4 w-80 h-80 bg-secondary/10 rounded-full blur-3xl" />

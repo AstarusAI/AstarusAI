@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, ChevronRight, LogIn, UserPlus, LogOut } from "lucide-react";
+import { Menu, X, ChevronRight, Rocket, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -38,22 +38,22 @@ export const Navbar = () => {
       animate={{ y: 0 }}
       transition={{ duration: 0.5 }}
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled ? "py-2" : "py-4"
+        scrolled ? "py-0.5" : "py-1"
       }`}
     >
       <div className="container mx-auto px-4">
         <div
-          className={`flex items-center justify-between rounded-2xl px-4 sm:px-6 py-3 transition-all duration-300 ${
+          className={`flex items-center justify-between rounded-2xl px-4 sm:px-6 py-1 transition-all duration-300 max-h-16 overflow-visible ${
             scrolled
               ? "glass-dark glass-border shadow-2xl"
-              : "bg-black/30 backdrop-blur-sm border border-white/10"
+              : "bg-black/70 backdrop-blur-sm border border-white/10"
           }`}
         >
           <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <img
-              src="/Astarus Logo.jpeg"
+              src="/Astarus AI No name logo.png"
               alt="Astarus Logo"
-              className="h-7 sm:h-8 w-auto rounded-lg"
+              className="h-20 sm:h-24 w-auto rounded-lg -my-2"
             />
             <span className="text-xl sm:text-2xl font-bold text-white tracking-tight">
               Astarus
@@ -113,28 +113,14 @@ export const Navbar = () => {
                     Try Demo
                   </Button>
                 </Link>
-                <Link to="/login">
-                  <Button
-                    variant="ghost"
-                    className="text-white/80 hover:text-white hover:bg-white/10 font-medium"
-                  >
-                    <LogIn className="w-4 h-4 mr-2" />
-                    Log In
-                  </Button>
-                </Link>
                 <Link to="/signup">
                   <Button className="bg-gradient-primary hover:opacity-90 text-white font-semibold shadow-lg shadow-primary/30 px-6">
-                    <UserPlus className="w-4 h-4 mr-2" />
-                    Sign Up
+                    <Rocket className="w-4 h-4 mr-2" />
+                    Get Started
                   </Button>
                 </Link>
               </>
             )}
-            <Link to="/contact">
-              <Button className="bg-gradient-secondary hover:opacity-90 text-white font-semibold shadow-lg shadow-secondary/30 px-6">
-                Get in Touch
-              </Button>
-            </Link>
           </div>
 
           <button
@@ -206,28 +192,14 @@ export const Navbar = () => {
                           Try Demo
                         </Button>
                       </Link>
-                      <Link to="/login" className="block">
-                        <Button
-                          variant="outline"
-                          className="w-full border-white/20 text-white hover:bg-white/10 font-medium"
-                        >
-                          <LogIn className="w-4 h-4 mr-2" />
-                          Log In
-                        </Button>
-                      </Link>
                       <Link to="/signup" className="block">
                         <Button className="w-full bg-gradient-primary hover:opacity-90 text-white font-semibold shadow-lg py-6">
-                          <UserPlus className="w-4 h-4 mr-2" />
-                          Sign Up
+                          <Rocket className="w-4 h-4 mr-2" />
+                          Get Started
                         </Button>
                       </Link>
                     </>
                   )}
-                  <Link to="/contact" className="block">
-                    <Button className="w-full bg-gradient-secondary hover:opacity-90 text-white font-semibold shadow-lg py-6">
-                      Get in Touch
-                    </Button>
-                  </Link>
                 </div>
               </div>
             </motion.div>

@@ -71,7 +71,7 @@ export default function Contact() {
             alt="Contact Background" 
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/90 via-background/80 to-background" />
+          <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/30 to-background/50" />
         </div>
         <div className="absolute top-20 left-1/3 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-1/3 w-80 h-80 bg-secondary/10 rounded-full blur-3xl" />

@@ -76,7 +76,7 @@ export const Hero = () => {
           </motion.p>
 
           <motion.div
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
+            className="flex items-center justify-center pt-4"
             variants={fadeInUp(0.3)}
           >
             <Link to="/demo">
@@ -87,14 +87,6 @@ export const Hero = () => {
                 <Play className="w-5 h-5 mr-2 transition-transform group-hover:scale-110" />
                 Try Interactive Demo
                 <ArrowRight className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
-              </Button>
-            </Link>
-            <Link to="/technology">
-              <Button 
-                size="lg" 
-                className="cta-button-secondary text-base px-8 py-6 h-auto bg-white/10 border-white/20 text-white hover:bg-white/20"
-              >
-                Learn How It Works
               </Button>
             </Link>
           </motion.div>

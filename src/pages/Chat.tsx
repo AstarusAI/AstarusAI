@@ -114,7 +114,7 @@ const DEFAULT_NEW_LUT_RESIDUALS: Record<string, number> = {
   "-4": 0.25,
 };
 
-const DEFAULT_THRESHOLD = 0.35;
+const DEFAULT_THRESHOLD = 0.65;
 const GEN_LENGTH = 300;
 
 function generateLutName() {
@@ -166,7 +166,7 @@ async function trainLut(
     residuals,
     sparsity: 1.0,
     // Match CLI behaviour
-    cost_scale: 8,
+    cost_scale: 0,
   };
   const res = await fetch(`${BASE_URL}/train_lut`, {
     method: "POST",
@@ -203,7 +203,7 @@ async function generateFromApi(
     residuals,
     wnn_blocks: wnnBlocks,
     // Match CLI behaviour
-    cost_scale: 8,
+    cost_scale: 0,
   };
 
   const res = await fetch(`${BASE_URL}/generate`, {

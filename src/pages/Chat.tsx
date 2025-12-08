@@ -86,7 +86,7 @@ type PretrainedLutConfig = {
 };
 
 // Demo uses fixed lut_name
-const DEMO_LUT_NAME = "AstarusAIInternalv16";
+const DEMO_LUT_NAME = "Astarus-prod-v1";
 
 // Updated to match CLI blocks: [-1, -5, -9]
 const PRETRAINED_LUTS: PretrainedLutConfig[] = [
@@ -95,9 +95,9 @@ const PRETRAINED_LUTS: PretrainedLutConfig[] = [
     lutName: DEMO_LUT_NAME,
     blocks: [-1, -5, -9],
     residualMap: {
-      "-1": 0.04,
-      "-5": 0.07,
-      "-9": 0.07,
+      "-1": 0.1,
+      "-5": 0.1,
+      "-9": 0.1,
     },
     readOnly: true,
   },

@@ -5,8 +5,9 @@ export interface Space {
   creator_id: string;
   lut_name: string;
   name: string;
-  type: 'company' | 'personal';
+  type: 'team' | 'personal';
   description?: string;
+  icon?: string;
   created_at: string;
   updated_at: string;
 }
@@ -90,8 +91,9 @@ export async function getUserSpaces(userId: string, userEmail: string): Promise<
 export async function createSpace(
   creatorId: string,
   name: string,
-  type: 'company' | 'personal',
-  description?: string
+  type: 'team' | 'personal',
+  description?: string,
+  icon?: string
 ): Promise<Space> {
   // Generate unique lut_name
   const lutName = `space-${crypto.randomUUID().slice(0, 8)}`;
@@ -104,6 +106,7 @@ export async function createSpace(
       name,
       type,
       description: description || null,
+      icon: icon || null,
     })
     .select()
     .single();
@@ -173,7 +176,7 @@ export async function getSpaceByLutName(lutName: string): Promise<Space | null> 
  */
 export async function updateSpace(
   spaceId: string,
-  updates: Partial<Pick<Space, 'name' | 'description' | 'type'>>
+  updates: Partial<Pick<Space, 'name' | 'description' | 'type' | 'icon'>>
 ): Promise<void> {
   const { error } = await supabase
     .from('spaces')

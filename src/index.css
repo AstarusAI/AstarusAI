@@ -231,6 +231,11 @@
     box-shadow: var(--shadow-glow-intense);
   }
 
+  .touch-manipulation {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
   .shine {
     position: relative;
     overflow: hidden;

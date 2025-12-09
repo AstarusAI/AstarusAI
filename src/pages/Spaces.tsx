@@ -12,7 +12,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 import { fadeInUp, staggerContainer } from "@/lib/motion";
-import { Plus, Brain, Building2, User, ArrowRight, Mail, Users, X, Check, XCircle } from "lucide-react";
+import { Plus, Brain, Building2, User, ArrowRight, Mail, Users, X, Check, XCircle, Users2 } from "lucide-react";
 import { 
   getUserSpaces, 
   createSpace, 
@@ -36,8 +36,9 @@ export default function Spaces() {
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
   const [newSpaceName, setNewSpaceName] = useState("");
-  const [newSpaceType, setNewSpaceType] = useState<"company" | "personal">("personal");
+  const [newSpaceType, setNewSpaceType] = useState<"team" | "personal">("personal");
   const [newSpaceDescription, setNewSpaceDescription] = useState("");
+  const [newSpaceIcon, setNewSpaceIcon] = useState("💼");
   const [creating, setCreating] = useState(false);
   const [inviteOpen, setInviteOpen] = useState<string | null>(null);
   const [inviteEmail, setInviteEmail] = useState("");
@@ -127,7 +128,8 @@ export default function Spaces() {
         user.id,
         newSpaceName,
         newSpaceType,
-        newSpaceDescription || undefined
+        newSpaceDescription || undefined,
+        newSpaceIcon || undefined
       );
 
       setSpaces([newSpace, ...spaces]);
@@ -135,6 +137,7 @@ export default function Spaces() {
       setNewSpaceName("");
       setNewSpaceType("personal");
       setNewSpaceDescription("");
+      setNewSpaceIcon("💼");
     } catch (error: any) {
       console.error("Failed to create space:", error);
       let errorMessage = error.message || "Failed to create space";
@@ -229,27 +232,28 @@ export default function Spaces() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      <div className="flex-1 px-4 py-20 bg-gradient-to-b from-black via-primary/5 to-black">
+      <div className="flex-1 px-3 sm:px-4 py-12 sm:py-16 md:py-20 bg-gradient-to-b from-black via-primary/5 to-black">
         <div className="container mx-auto max-w-6xl">
           <motion.div
             initial="hidden"
             animate="visible"
             variants={staggerContainer(0.1)}
-            className="space-y-8"
+            className="space-y-6 sm:space-y-8"
           >
-            <motion.div variants={fadeInUp(0)} className="flex items-center justify-between">
+            <motion.div variants={fadeInUp(0)} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h1 className="text-4xl font-bold text-white mb-2">Your Spaces</h1>
-                <p className="text-white/70">Manage your AI brains and knowledge bases</p>
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2">Your Spaces</h1>
+                <p className="text-sm sm:text-base text-white/70">Manage your AI brains and knowledge bases</p>
               </div>
               <Dialog open={createOpen} onOpenChange={setCreateOpen}>
                 <DialogTrigger asChild>
-                  <Button className="bg-gradient-primary hover:opacity-90 text-white">
+                  <Button className="min-h-[44px] bg-gradient-primary hover:opacity-90 text-white touch-manipulation">
                     <Plus className="w-4 h-4 mr-2" />
-                    Create New Space
+                    <span className="hidden sm:inline">Create New Space</span>
+                    <span className="sm:hidden">Create</span>
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="glass-dark glass-border border-white/20 text-white bg-black/90 !left-1/2 !top-1/2 !-translate-x-1/2 !-translate-y-1/2">
+                <DialogContent className="glass-dark glass-border border-white/20 text-white bg-black/90 !left-1/2 !top-1/2 !-translate-x-1/2 !-translate-y-1/2 max-w-[95vw] sm:max-w-md mx-4">
                   <DialogHeader>
                     <DialogTitle className="text-white">Create New Space</DialogTitle>
                     <DialogDescription className="text-white/70">
@@ -263,18 +267,18 @@ export default function Spaces() {
                         id="name"
                         value={newSpaceName}
                         onChange={(e) => setNewSpaceName(e.target.value)}
-                        placeholder="e.g., X Company Brain"
+                        placeholder="e.g., Marketing Team Brain"
                         className="bg-white/5 border-white/20 text-white"
                       />
                     </div>
                     <div className="space-y-2">
                       <Label>Type *</Label>
-                      <RadioGroup value={newSpaceType} onValueChange={(v) => setNewSpaceType(v as "company" | "personal")}>
+                      <RadioGroup value={newSpaceType} onValueChange={(v) => setNewSpaceType(v as "team" | "personal")}>
                         <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="company" id="company" />
-                          <Label htmlFor="company" className="flex items-center gap-2 cursor-pointer">
-                            <Building2 className="w-4 h-4" />
-                            Company
+                          <RadioGroupItem value="team" id="team" />
+                          <Label htmlFor="team" className="flex items-center gap-2 cursor-pointer">
+                            <Users2 className="w-4 h-4" />
+                            Team
                           </Label>
                         </div>
                         <div className="flex items-center space-x-2">
@@ -285,6 +289,33 @@ export default function Spaces() {
                           </Label>
                         </div>
                       </RadioGroup>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="icon">Icon</Label>
+                      <div className="grid grid-cols-6 sm:grid-cols-8 gap-2">
+                        {['💼', '🚀', '🎯', '💡', '🔥', '⚡', '🌟', '🎨', '🔬', '📊', '🎓', '🏆', '💻', '🌐', '🎪', '🎭', '🎬', '🎵', '🎮', '🏀', '⚽', '🎾', '🏈', '🎲'].map((emoji) => (
+                          <button
+                            key={emoji}
+                            type="button"
+                            onClick={() => setNewSpaceIcon(emoji)}
+                            className={`text-2xl p-2 rounded-lg border-2 transition-all hover:scale-110 ${
+                              newSpaceIcon === emoji
+                                ? 'border-primary bg-primary/20'
+                                : 'border-white/20 bg-white/5 hover:border-white/40'
+                            }`}
+                          >
+                            {emoji}
+                          </button>
+                        ))}
+                      </div>
+                      <Input
+                        type="text"
+                        value={newSpaceIcon}
+                        onChange={(e) => setNewSpaceIcon(e.target.value)}
+                        placeholder="Or enter custom emoji/icon"
+                        className="bg-white/5 border-white/20 text-white"
+                        maxLength={2}
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="description">Description (Optional)</Label>
@@ -329,8 +360,10 @@ export default function Spaces() {
                         <CardHeader>
                           <div className="flex items-start justify-between mb-2">
                             <CardTitle className="text-white">{invitation.space.name}</CardTitle>
-                            {invitation.space.type === "company" ? (
-                              <Building2 className="w-5 h-5 text-primary" />
+                            {invitation.space.icon ? (
+                              <span className="text-2xl">{invitation.space.icon}</span>
+                            ) : invitation.space.type === "team" ? (
+                              <Users2 className="w-5 h-5 text-primary" />
                             ) : (
                               <User className="w-5 h-5 text-secondary" />
                             )}
@@ -348,7 +381,7 @@ export default function Spaces() {
                               <Button
                                 onClick={() => handleAcceptInvitation(invitation.space_id)}
                                 disabled={processingInvitation === invitation.space_id}
-                                className="flex-1 bg-gradient-primary hover:opacity-90 text-white"
+                                className="flex-1 min-h-[44px] bg-gradient-primary hover:opacity-90 text-white touch-manipulation"
                               >
                                 <Check className="w-4 h-4 mr-2" />
                                 {processingInvitation === invitation.space_id ? "Accepting..." : "Accept"}
@@ -357,7 +390,7 @@ export default function Spaces() {
                                 onClick={() => handleDeclineInvitation(invitation.space_id)}
                                 disabled={processingInvitation === invitation.space_id}
                                 variant="outline"
-                                className="border-red-500/50 text-red-400 hover:bg-red-500/10"
+                                className="min-h-[44px] min-w-[44px] border-red-500/50 text-red-400 hover:bg-red-500/10 touch-manipulation"
                               >
                                 <XCircle className="w-4 h-4" />
                               </Button>
@@ -388,7 +421,7 @@ export default function Spaces() {
                     <p className="text-white/70 mb-6">Create your first space to get started</p>
                     <Button
                       onClick={() => setCreateOpen(true)}
-                      className="bg-gradient-primary hover:opacity-90 text-white"
+                      className="min-h-[44px] bg-gradient-primary hover:opacity-90 text-white touch-manipulation"
                     >
                       <Plus className="w-4 h-4 mr-2" />
                       Create Your First Space
@@ -399,7 +432,7 @@ export default function Spaces() {
             ) : (
               <motion.div
                 variants={fadeInUp(0.1)}
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
               >
                 {spaces.map((space, index) => (
                   <motion.div
@@ -409,11 +442,16 @@ export default function Spaces() {
                     <Card className="glass-dark glass-border border-white/20 hover:border-primary/50 transition-all cursor-pointer h-full">
                       <CardHeader>
                         <div className="flex items-start justify-between mb-2">
-                          <CardTitle className="text-white">{space.name}</CardTitle>
-                          {space.type === "company" ? (
-                            <Building2 className="w-5 h-5 text-primary" />
-                          ) : (
-                            <User className="w-5 h-5 text-secondary" />
+                          <CardTitle className="text-white flex items-center gap-2">
+                            {space.icon && <span className="text-2xl">{space.icon}</span>}
+                            {space.name}
+                          </CardTitle>
+                          {!space.icon && (
+                            space.type === "team" ? (
+                              <Users2 className="w-5 h-5 text-primary" />
+                            ) : (
+                              <User className="w-5 h-5 text-secondary" />
+                            )
                           )}
                         </div>
                         <CardDescription className="text-white/70 capitalize">
@@ -427,7 +465,7 @@ export default function Spaces() {
                         <div className="space-y-2">
                           <Button
                             onClick={() => navigate(`/spaces/${space.lut_name}`)}
-                            className="w-full bg-gradient-primary hover:opacity-90 text-white"
+                            className="w-full min-h-[44px] bg-gradient-primary hover:opacity-90 text-white touch-manipulation"
                           >
                             Open
                             <ArrowRight className="w-4 h-4 ml-2" />
@@ -440,7 +478,7 @@ export default function Spaces() {
                                   loadSpaceMembers(space.id);
                                 }}
                                 variant="outline"
-                                className="w-full border-white/20 text-white hover:bg-white/10"
+                                className="w-full min-h-[44px] border-white/20 text-white bg-white/10 opacity-90 hover:bg-white/10 hover:text-white hover:scale-105 transition-transform touch-manipulation"
                               >
                                 <Users className="w-4 h-4 mr-2" />
                                 Members
@@ -448,7 +486,7 @@ export default function Spaces() {
                               <Button
                                 onClick={() => handleDeleteSpace(space.id)}
                                 variant="outline"
-                                className="w-full border-red-500/50 text-red-400 hover:bg-red-500/10"
+                                className="w-full min-h-[44px] border-red-500/50 text-red-400 bg-red-500/10 opacity-90 hover:bg-red-500/10 hover:text-red-400 hover:scale-105 transition-transform touch-manipulation"
                               >
                                 <X className="w-4 h-4 mr-2" />
                                 Delete
@@ -468,7 +506,7 @@ export default function Spaces() {
 
       {/* Members Dialog */}
       <Dialog open={membersOpen !== null} onOpenChange={(open) => !open && setMembersOpen(null)}>
-        <DialogContent className="glass-dark glass-border border-white/20 text-white bg-black/90 !left-1/2 !top-1/2 !-translate-x-1/2 !-translate-y-1/2 max-w-2xl">
+        <DialogContent className="glass-dark glass-border border-white/20 text-white bg-black/90 !left-1/2 !top-1/2 !-translate-x-1/2 !-translate-y-1/2 max-w-[95vw] sm:max-w-2xl mx-4">
           <DialogHeader>
             <DialogTitle className="text-white">Space Members</DialogTitle>
             <DialogDescription className="text-white/70">

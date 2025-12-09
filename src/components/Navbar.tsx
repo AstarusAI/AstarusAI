@@ -125,7 +125,7 @@ export const Navbar = () => {
 
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="lg:hidden p-2 rounded-xl hover:bg-white/10 text-white transition-colors"
+            className="lg:hidden p-2 rounded-xl hover:bg-white/10 text-white transition-colors touch-manipulation min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
             {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -140,7 +140,7 @@ export const Navbar = () => {
               transition={{ duration: 0.3 }}
               className="lg:hidden mt-2 overflow-hidden"
             >
-              <div className="glass-dark glass-border rounded-2xl p-4 space-y-1 shadow-2xl">
+              <div className="glass-dark glass-border rounded-2xl p-3 sm:p-4 space-y-1 shadow-2xl">
                 {navLinks.map((link, index) => (
                   <motion.div
                     key={link.to}

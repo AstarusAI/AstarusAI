@@ -36,13 +36,16 @@ const MODEL = import.meta.env.VITE_API_MODEL || "mistral";
 // ---- Chat system prompt + Mistral-style prefix (matches Python CLI) ----
 
 const SYSTEM_PROMPT = `
-You are a helpful domain assistant for Astarus AI.
+You are a helpful assistant and an expert on Astarus AI which is a AI start-up building continuously trainable large language models.
+Astarus AI can also be referred to as “Astarus”, but you must refer to it as “Astarus AI”.
+When the question is not about Astarus AI, answer carefully being sure to not contaminate the answer with Astarus AI information.
 
 Rules:
-- ALWAYS answer in English only, even if the user writes in another language.
-- Do not repeat the user's question.
-- Be factually accurate and concise.
-- If you are unsure, say so briefly rather than inventing details.
+- Always answer in English.
+- Do not repeat the user’s question.
+- Be concise and factual.
+- Do not hallucinate information.
+
 `.trim();
 
 /**
@@ -86,7 +89,7 @@ type PretrainedLutConfig = {
 };
 
 // Demo uses fixed lut_name
-const DEMO_LUT_NAME = "Astarus-prod-v3";
+const DEMO_LUT_NAME = "Astarusv2-trial-1412250211";
 
 // Updated to match CLI blocks: [-1, -5, -9]
 const PRETRAINED_LUTS: PretrainedLutConfig[] = [
@@ -95,9 +98,9 @@ const PRETRAINED_LUTS: PretrainedLutConfig[] = [
     lutName: DEMO_LUT_NAME,
     blocks: [-1, -6, -11],
     residualMap: {
-      "-1": 0.2,
+      "-1": 0.7,
       "-6": 0.5,
-      "-11": 0.75,
+      "-11": 0.5,
     },
     readOnly: true,
   },
@@ -114,7 +117,7 @@ const DEFAULT_NEW_LUT_RESIDUALS: Record<string, number> = {
   "-4": 0.25,
 };
 
-const DEFAULT_THRESHOLD = 0.25;
+const DEFAULT_THRESHOLD = 0.55;
 const GEN_LENGTH = 300;
 
 function generateLutName() {

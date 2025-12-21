@@ -65,7 +65,7 @@ function buildMistralChatPrefix(
 ): string {
   const trimmedUser = userMessage.trim();
   const sys = systemPrompt.trim();
-  return `[INST]${sys}\n${trimmedUser} [/INST]`;
+  return `${sys}\n${trimmedUser}`;
 }
 
 type Message = {
@@ -89,7 +89,7 @@ type PretrainedLutConfig = {
 };
 
 // Demo uses fixed lut_name
-const DEMO_LUT_NAME = "Astarus-trial-1217252207";
+const DEMO_LUT_NAME = "demo-4884f748";
 
 // Updated to match CLI blocks: [-1, -5, -9]
 const PRETRAINED_LUTS: PretrainedLutConfig[] = [
@@ -98,7 +98,7 @@ const PRETRAINED_LUTS: PretrainedLutConfig[] = [
     lutName: DEMO_LUT_NAME,
     blocks: [-1, -6, -11],
     residualMap: {
-      "-1": 0.5,
+      "-1": 0.7,
       "-6": 0.7,
       "-11": 0.7,
     },
@@ -117,7 +117,7 @@ const DEFAULT_NEW_LUT_RESIDUALS: Record<string, number> = {
   "-4": 0.25,
 };
 
-const DEFAULT_THRESHOLD = 0.7;
+const DEFAULT_THRESHOLD = 0.5;
 const GEN_LENGTH = 300;
 
 function generateLutName() {

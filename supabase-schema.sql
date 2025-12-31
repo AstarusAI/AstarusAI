@@ -92,6 +92,53 @@ BEGIN
   END IF;
 END $$;
 
+-- Ensure the type constraint is correct (for existing tables)
+-- First fix any existing rows with invalid type values, then update constraint
+DO $$
+DECLARE
+  constraint_record RECORD;
+BEGIN
+  -- Step 1: Fix any existing rows with invalid type values
+  -- Normalize type values: trim whitespace, convert to lowercase, set invalid to 'personal'
+  UPDATE spaces 
+  SET type = CASE 
+    WHEN LOWER(TRIM(type)) = 'team' THEN 'team'
+    WHEN LOWER(TRIM(type)) = 'personal' THEN 'personal'
+    ELSE 'personal'
+  END
+  WHERE type IS NULL 
+     OR LOWER(TRIM(type)) NOT IN ('team', 'personal');
+  
+  -- Step 2: Drop ALL existing constraints on the type column
+  FOR constraint_record IN
+    SELECT constraint_name
+    FROM information_schema.table_constraints
+    WHERE table_name = 'spaces'
+      AND constraint_type = 'CHECK'
+      AND constraint_name LIKE '%type%'
+  LOOP
+    BEGIN
+      EXECUTE 'ALTER TABLE spaces DROP CONSTRAINT IF EXISTS ' || quote_ident(constraint_record.constraint_name);
+    EXCEPTION
+      WHEN OTHERS THEN
+        -- Continue if constraint doesn't exist
+        NULL;
+    END;
+  END LOOP;
+  
+  -- Step 3: Drop and recreate the constraint to ensure it's correct
+  ALTER TABLE spaces DROP CONSTRAINT IF EXISTS spaces_type_check;
+  
+  ALTER TABLE spaces 
+    ADD CONSTRAINT spaces_type_check 
+    CHECK (type IN ('team', 'personal'));
+EXCEPTION
+  WHEN OTHERS THEN
+    -- If there's any other error, log it but continue
+    RAISE NOTICE 'Error updating type constraint: %', SQLERRM;
+END $$;
+
+
 -- Create indexes for spaces
 CREATE INDEX IF NOT EXISTS idx_spaces_creator_id ON spaces(creator_id);
 CREATE INDEX IF NOT EXISTS idx_spaces_lut_name ON spaces(lut_name);

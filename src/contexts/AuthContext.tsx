@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { authCallbackUrl } from "@/lib/siteUrl";
 
 interface User {
   id: string;
@@ -82,7 +83,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       email,
       password,
       options: {
-        emailRedirectTo: `${import.meta.env.VITE_SITE_URL || window.location.origin}/auth/callback`,
+        emailRedirectTo: authCallbackUrl,
         data: {
           name: name || email.split("@")[0],
         },
@@ -107,7 +108,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       type: 'signup',
       email: email,
       options: {
-        emailRedirectTo: `${import.meta.env.VITE_SITE_URL || window.location.origin}/auth/callback`,
+        emailRedirectTo: authCallbackUrl,
       },
     });
 

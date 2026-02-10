@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { authCallbackUrl } from "@/lib/siteUrl";
 import { motion } from "framer-motion";
 import { Mail, ArrowLeft, MailCheck, RefreshCw, Send, Home } from "lucide-react";
 
@@ -23,7 +24,7 @@ export default function ForgotPassword() {
 
     try {
       const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${import.meta.env.VITE_SITE_URL || window.location.origin}/auth/callback`,
+        redirectTo: authCallbackUrl,
       });
       if (err) throw err;
       setSent(true);
@@ -51,7 +52,7 @@ export default function ForgotPassword() {
 
     try {
       const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${import.meta.env.VITE_SITE_URL || window.location.origin}/auth/callback`,
+        redirectTo: authCallbackUrl,
       });
       if (err) throw err;
       setResendSuccess(true);

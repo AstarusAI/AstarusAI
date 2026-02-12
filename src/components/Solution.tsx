@@ -54,7 +54,7 @@ export const Solution = () => {
             Memory-Augmented{" "}
             <span className="text-primary">Transformers</span>
           </motion.h2>
-          <motion.p className="text-base sm:text-lg md:text-xl text-neutral-700 max-w-2xl mx-auto px-4 font-sans font-medium" variants={fadeInUp(0)}>
+          <motion.p className="text-base sm:text-lg md:text-xl text-black max-w-2xl mx-auto px-4 font-sans font-medium" variants={fadeInUp(0)}>
             A breakthrough architecture that adds a small, trainable lookup table (LUT) layer to transformer blocks, enabling instant learning.
           </motion.p>
         </motion.div>

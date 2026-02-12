@@ -39,7 +39,7 @@ const problems = [
 ];
 
 const cardLayouts = [
-  "image-top",
+  "number-hero",
   "number-hero",
   "number-hero",
   "number-hero",

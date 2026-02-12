@@ -62,11 +62,11 @@ export const Hero = () => {
           </motion.h1>
 
           <motion.p
-            className="text-base sm:text-lg md:text-xl lg:text-xl text-black/90 max-w-2xl lg:max-w-[36rem] mx-auto leading-relaxed px-4 font-medium font-sans"
+            className="text-base sm:text-lg md:text-xl lg:text-xl text-white max-w-2xl lg:max-w-[36rem] mx-auto leading-relaxed px-4 font-medium font-sans"
             variants={fadeInUp(0.12)}
           >
             Memory-augmented transformers that enable{" "}
-            <span className="text-black font-semibold">real-time learning</span> and adaptation
+            <span className="text-white font-semibold">real-time learning</span> and adaptation
             without expensive fine-tuning or complex infrastructure.
           </motion.p>
 

@@ -18,7 +18,7 @@ export const Hero = () => {
         transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
       >
         <img
-          src="/AIBackground1.webp"
+          src="/homepagebackground1.jpg"
           alt="AI and neural networks"
           className="w-full h-full object-cover scale-105"
         />
@@ -62,12 +62,14 @@ export const Hero = () => {
           </motion.h1>
 
           <motion.p
-            className="text-base sm:text-lg md:text-xl lg:text-xl text-white max-w-2xl lg:max-w-[36rem] mx-auto leading-relaxed px-4 font-medium font-sans"
+            className="text-base sm:text-lg md:text-xl lg:text-xl text-white max-w-2xl lg:max-w-[36rem] mx-auto leading-relaxed font-medium font-sans"
             variants={fadeInUp(0.12)}
           >
-            Memory-augmented transformers that enable{" "}
-            <span className="text-white font-semibold">real-time learning</span> and adaptation
-            without expensive fine-tuning or complex infrastructure.
+            <span className="inline-block w-full rounded-2xl bg-black/70 backdrop-blur-sm px-5 sm:px-6 py-4 sm:py-5 shadow-xl border border-white/10">
+              Memory-augmented transformers that enable{" "}
+              <span className="font-semibold">real-time learning</span> and adaptation
+              without expensive fine-tuning or complex infrastructure.
+            </span>
           </motion.p>
 
           <motion.div className="flex items-center justify-center pt-14 sm:pt-20 md:pt-24 lg:pt-28 xl:pt-32 px-4" variants={fadeInUp(0.16)}>

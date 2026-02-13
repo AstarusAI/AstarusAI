@@ -30,7 +30,7 @@ import {
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "https://dhzzxfr41qjcz7-8000.proxy.runpod.net";
 
 export default function Spaces() {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [spaces, setSpaces] = useState<Space[]>([]);
   const [loading, setLoading] = useState(true);
@@ -46,13 +46,14 @@ export default function Spaces() {
   const [updatingSpace, setUpdatingSpace] = useState(false);
 
   useEffect(() => {
+    if (authLoading) return;
     if (!isAuthenticated || !user) {
       navigate("/login");
       return;
     }
     loadSpaces();
     loadPendingInvitations();
-  }, [isAuthenticated, user, navigate]);
+  }, [authLoading, isAuthenticated, user, navigate]);
 
   const loadSpaces = async () => {
     if (!user) return;
@@ -211,7 +212,7 @@ export default function Spaces() {
     }
   };
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen flex flex-col">
         <Navbar />

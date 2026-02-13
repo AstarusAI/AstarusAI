@@ -25,24 +25,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Listen for auth changes FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (session?.user) {
-          const userEmail = session.user.email || '';
-          setUser({
-            id: session.user.id,
-            email: userEmail,
-            name: session.user.user_metadata?.name || userEmail.split("@")[0],
-          });
-        } else {
-          setUser(null);
-        }
-        setLoading(false);
-      }
-    );
-
-    // Then check current session
+    // Restore session from storage first (so reload doesn't flash logged-out)
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         setUser({
@@ -53,6 +36,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       setLoading(false);
     });
+
+    // Then listen for auth changes (sign in, sign out, token refresh)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        if (session?.user) {
+          const userEmail = session.user.email || '';
+          setUser({
+            id: session.user.id,
+            email: userEmail,
+            name: session.user.user_metadata?.name || userEmail.split("@")[0],
+          });
+        } else {
+          setUser(null);
+        }
+      }
+    );
 
     return () => {
       subscription.unsubscribe();

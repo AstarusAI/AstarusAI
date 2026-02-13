@@ -20,7 +20,7 @@ import { Plus, Users2, User, Brain, Sparkles } from "lucide-react";
 import { createSpace } from "@/lib/spaceService";
 
 export default function CreateSpace() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   const [name, setName] = useState("");
@@ -48,6 +48,13 @@ export default function CreateSpace() {
     "🧠",
   ];
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-10 w-10 border-2 border-primary border-t-transparent" />
+      </div>
+    );
+  }
   if (!isAuthenticated || !user) {
     return <Navigate to="/login" replace />;
   }

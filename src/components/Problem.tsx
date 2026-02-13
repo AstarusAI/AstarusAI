@@ -72,17 +72,29 @@ function ProblemCard({
 
   if (layout === "number-hero") {
     return (
-      <Card className="group relative overflow-hidden border-0 h-full rounded-2xl bg-card border border-border hover:border-primary/30 transition-all duration-500 shadow-sm">
-        <div className="p-5 sm:p-6 md:p-7 lg:p-8">
-          <span className="font-display text-6xl sm:text-7xl lg:text-8xl font-bold text-primary/20 leading-none block mb-3">0{index + 1}</span>
-          <h3 className="font-display text-xl sm:text-2xl lg:text-3xl font-bold text-foreground mb-3">{problem.title}</h3>
-          <p className="text-sm lg:text-base text-muted-foreground leading-relaxed font-sans mb-4">{problem.description}</p>
+      <Card className="group relative overflow-hidden border-0 h-full rounded-2xl bg-card border border-border/80 hover:border-primary/40 transition-all duration-300 shadow-md hover:shadow-xl flex flex-col">
+        {/* Image hero — integrated, gradient blends into content */}
+        <div className="relative flex-[0_0_44%] min-h-[140px] overflow-hidden">
+          <img
+            src={problem.image}
+            alt={problem.title}
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+          <span className="absolute top-3 right-3 font-display text-3xl sm:text-4xl font-bold text-white/40 group-hover:text-white/60 transition-colors">
+            0{index + 1}
+          </span>
+          <h3 className="absolute bottom-0 left-0 right-0 p-4 sm:p-5 font-display text-lg sm:text-xl lg:text-2xl font-bold text-white drop-shadow-lg">
+            {problem.title}
+          </h3>
         </div>
-        <div className="relative h-28 lg:h-32 overflow-hidden rounded-b-2xl">
-          <img src={problem.image} alt="" className="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity" />
-          <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
+        {/* Content — seamless flow from image */}
+        <div className="flex-1 p-4 sm:p-5 flex flex-col justify-center">
+          <p className="text-sm sm:text-base text-muted-foreground leading-relaxed font-sans">
+            {problem.description}
+          </p>
+          <div className="mt-3 w-10 h-0.5 bg-primary/60 rounded-full group-hover:w-14 transition-all duration-300" />
         </div>
-        <div className="absolute bottom-0 left-0 right-0 h-0.5 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left bg-primary" />
       </Card>
     );
   }

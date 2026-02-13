@@ -31,7 +31,7 @@ export default function Technology() {
 
       {/* Hero — clear image, light overlay */}
       <motion.section
-        className="relative pt-24 sm:pt-28 md:pt-28 lg:pt-32 pb-16 sm:pb-20 md:pb-24 lg:pb-28 px-4 sm:px-6 md:px-8 lg:px-10 overflow-hidden safe-area-px min-h-[50vh] flex flex-col justify-center"
+        className="relative pt-24 sm:pt-28 md:pt-28 lg:pt-24 pb-12 sm:pb-16 md:pb-20 lg:pb-14 xl:pb-16 px-4 sm:px-6 md:px-8 lg:px-10 overflow-hidden safe-area-px min-h-[40vh] lg:min-h-[35vh] flex flex-col justify-center"
         initial="hidden"
         animate="visible"
         variants={fadeIn()}
@@ -46,7 +46,7 @@ export default function Technology() {
         </div>
 
         <div className="container relative z-10 max-w-4xl lg:max-w-5xl xl:max-w-[64rem] mx-auto text-center w-full">
-          <motion.div variants={fadeInUp(0.1)} className="space-y-5 sm:space-y-6 lg:space-y-8">
+          <motion.div variants={fadeInUp(0.1)} className="space-y-3 sm:space-y-4 lg:space-y-5">
             <p className="font-accent text-primary font-semibold text-xs uppercase tracking-wider">
               Deep Dive
             </p>
@@ -63,18 +63,18 @@ export default function Technology() {
 
       {/* Metrics — image cards, motion, no icons */}
       <motion.section
-        className="py-16 sm:py-20 md:py-24 lg:py-24 xl:py-28 px-4 sm:px-6 md:px-8 lg:px-10 bg-gradient-to-b from-muted/40 to-background"
+        className="py-12 sm:py-16 md:py-20 lg:py-14 xl:py-16 px-4 sm:px-6 md:px-8 lg:px-10 bg-gradient-to-b from-muted/40 to-background"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.1 }}
         variants={fadeIn()}
       >
         <div className="container max-w-5xl lg:max-w-6xl xl:max-w-[72rem] mx-auto">
-          <motion.div className="max-w-3xl lg:max-w-[42rem] mx-auto text-center mb-10 sm:mb-12 lg:mb-14" variants={fadeInUp(0.1)}>
-            <p className="font-accent text-primary font-semibold text-xs uppercase tracking-wider mb-3 sm:mb-4">
+          <motion.div className="max-w-3xl lg:max-w-[72rem] mx-auto text-center mb-6 sm:mb-10 lg:mb-8" variants={fadeInUp(0.1)}>
+            <p className="font-accent text-primary font-semibold text-xs uppercase tracking-wider mb-2 sm:mb-3">
               Proven Results
             </p>
-            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold text-foreground mb-3 sm:mb-4">
+            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-4xl xl:text-5xl font-bold text-foreground mb-2 sm:mb-3">
               Performance <span className="text-primary">Metrics</span>
             </h2>
             <p className="text-base sm:text-lg text-muted-foreground font-accent">
@@ -83,7 +83,7 @@ export default function Technology() {
           </motion.div>
 
           <motion.div
-            className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-5 lg:gap-6 xl:gap-8"
+            className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 lg:gap-4 xl:gap-5"
             variants={staggerContainer(0.08, 0.05)}
           >
             {performanceMetrics.map((metric, index) => (
@@ -117,15 +117,15 @@ export default function Technology() {
 
       {/* Our Architecture — unique pattern background */}
       <motion.section
-        className="relative py-16 sm:py-20 md:py-24 lg:py-24 xl:py-28 px-4 sm:px-6 md:px-8 lg:px-10 bg-white bg-pattern-architecture overflow-hidden"
+        className="relative py-12 sm:py-16 md:py-20 lg:py-14 xl:py-16 px-4 sm:px-6 md:px-8 lg:px-10 bg-white bg-pattern-architecture overflow-hidden"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.1 }}
         variants={fadeIn()}
       >
         <div className="container relative z-10 max-w-5xl lg:max-w-6xl xl:max-w-[72rem] mx-auto">
-          <motion.div className="max-w-3xl lg:max-w-[42rem] mx-auto text-center mb-10 sm:mb-12 lg:mb-14" variants={fadeInUp(0.1)}>
-            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold text-foreground mb-3 sm:mb-4">
+          <motion.div className="max-w-3xl lg:max-w-[72rem] mx-auto text-center mb-6 sm:mb-10 lg:mb-8" variants={fadeInUp(0.1)}>
+            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-4xl xl:text-5xl font-bold text-foreground mb-2 sm:mb-3">
               Memory-Augmented <span className="text-primary">Architecture</span>
             </h2>
             <p className="text-base sm:text-lg text-muted-foreground font-accent">
@@ -134,7 +134,7 @@ export default function Technology() {
           </motion.div>
 
           <motion.div
-            className="grid md:grid-cols-3 gap-5 sm:gap-6 lg:gap-8"
+            className="grid md:grid-cols-3 gap-4 sm:gap-5 lg:gap-5 xl:gap-6"
             variants={staggerContainer(0.1, 0.05)}
           >
             {technicalFeatures.map((feature, index) => (
@@ -151,7 +151,7 @@ export default function Technology() {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   </div>
-                  <div className="p-4 sm:p-5 lg:p-6">
+                  <div className="p-4 sm:p-5 lg:p-4 xl:p-5">
                     <h3 className="font-display text-lg sm:text-xl font-bold text-foreground mb-1.5 sm:mb-2">{feature.title}</h3>
                     <p className="text-muted-foreground font-accent text-sm leading-relaxed">{feature.description}</p>
                   </div>
@@ -164,7 +164,7 @@ export default function Technology() {
 
       {/* How it works — crossing image + steps */}
       <motion.section
-        className="py-16 sm:py-20 md:py-24 lg:py-24 xl:py-28 px-4 sm:px-6 md:px-8 lg:px-10 bg-muted/30 relative overflow-hidden"
+        className="py-12 sm:py-16 md:py-20 lg:py-14 xl:py-16 px-4 sm:px-6 md:px-8 lg:px-10 bg-muted/30 relative overflow-hidden"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.1 }}
@@ -178,8 +178,8 @@ export default function Technology() {
           />
         </div>
         <div className="container relative z-10 max-w-5xl lg:max-w-6xl xl:max-w-[72rem] mx-auto">
-          <motion.div className="max-w-3xl lg:max-w-[42rem] mx-auto text-center mb-10 sm:mb-12 lg:mb-14" variants={fadeInUp(0.1)}>
-            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold text-foreground mb-3 sm:mb-4">
+          <motion.div className="max-w-3xl lg:max-w-[72rem] mx-auto text-center mb-6 sm:mb-10 lg:mb-8" variants={fadeInUp(0.1)}>
+            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl lg:text-4xl xl:text-5xl font-bold text-foreground mb-2 sm:mb-3">
               How It <span className="text-primary">Works</span>
             </h2>
             <p className="text-base sm:text-lg text-muted-foreground font-accent">
@@ -188,7 +188,7 @@ export default function Technology() {
           </motion.div>
 
           <motion.div
-            className="max-w-2xl lg:max-w-[40rem] xl:max-w-[44rem] mx-auto space-y-3 lg:space-y-4"
+            className="max-w-2xl lg:max-w-[48rem] xl:max-w-[56rem] mx-auto space-y-2 lg:space-y-3"
             variants={staggerContainer(0.08, 0.05)}
           >
             {workflowSteps.map((step, index) => (
@@ -232,7 +232,7 @@ export default function Technology() {
 
       {/* Experience It Yourself — compact, patterned, polished */}
       <motion.section
-        className="relative py-12 sm:py-14 md:py-16 lg:py-20 px-4 sm:px-6 md:px-8 lg:px-10 bg-gradient-dark overflow-hidden"
+        className="relative py-10 sm:py-12 md:py-14 lg:py-12 xl:py-14 px-4 sm:px-6 md:px-8 lg:px-10 bg-gradient-dark overflow-hidden"
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.2 }}
